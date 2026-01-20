@@ -1,3 +1,4 @@
+// sw.js
 const CACHE_NAME = "zxiter-cache-v1";
 const FILES_TO_CACHE = [
   "./index.html",
@@ -20,7 +21,5 @@ self.addEventListener("activate", event => {
 });
 
 self.addEventListener("fetch", event => {
-  event.respondWith(
-    caches.match(event.request).then(res => res || fetch(event.request))
-  );
+  event.respondWith(caches.match(event.request).then(res => res || fetch(event.request)));
 });
