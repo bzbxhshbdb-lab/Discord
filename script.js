@@ -1,6 +1,15 @@
-/* =========================
-   ABAS
-   ========================= */
+// =========================
+// UNITY BRIDGE SIMULADA
+// =========================
+if(!window.Unity) window.Unity = {
+  call: function(data) {
+    console.log("Config enviada para Unity:", data);
+  }
+};
+
+// =========================
+// ABAS
+// =========================
 const tabs = document.querySelectorAll(".tab");
 const contents = document.querySelectorAll(".content");
 
@@ -13,12 +22,12 @@ tabs.forEach(tab => {
   });
 });
 
-/* =========================
-   COLETAR CONFIGURAÇÃO
-   ========================= */
+// =========================
+// COLETAR CONFIGURAÇÃO
+// =========================
 function collectSettings() {
   const config = {};
-  
+
   // Checkboxes
   document.querySelectorAll("input[type=checkbox]").forEach(cb => {
     config[cb.dataset.key] = cb.checked;
@@ -27,64 +36,54 @@ function collectSettings() {
   // Hitbox alvo
   config.target = document.getElementById("target").value;
 
+  // Sensibilidade
+  config.sensitivity = {
+    x: parseFloat(document.getElementById("sensX").value),
+    y: parseFloat(document.getElementById("sensY").value),
+    z: parseFloat(document.getElementById("sensZ").value)
+  };
+
   return config;
 }
 
-/* =========================
-   AIM ASSIST AVANÇADO
-   ========================= */
+// =========================
+// AIM ASSIST AVANÇADO
+// =========================
 function buildAimAssist(settings) {
-  if (!settings.aimAssist && !settings.aimLock && !settings.aimbot) {
-    return { enabled: false };
-  }
+  if (!settings.aimAssist && !settings.aimLock && !settings.aimbot) return { enabled: false };
 
   return {
     enabled: settings.aimAssist || settings.aimLock || settings.aimbot,
-
-    // 🔥 Magnetismo suave
-    magnetism: settings.aimAssist ? 0.85 : 0.0,
-
-    // 🔥 Redução de sensibilidade (quando habilitado)
-    slowdown: settings.aimAssist ? 0.5 : 0.0,
-
-    // 🔥 Correção angular suave (não gira sozinho)
-    correction: settings.aimAssist ? 0.8 : 0.0,
-
-    // 🔥 Cone de mira
+    magnetism: settings.aimAssist ? 0.85 : 0,
+    slowdown: settings.aimAssist ? 0.5 : 0,
+    correction: settings.aimAssist ? 0.8 : 0,
     baseFov: 8.0,
     minFov: 4.0,
     dynamicFov: true,
-
-    // 🎯 Prioridade de hitbox
     priority: settings.target || "head",
-
-    // ❌ nunca automático
     autoRotate: false,
     snap: false,
-
-    // 🔒 Aim Lock
     aimLock: settings.aimLock ? { enabled: true, strength: 0.8, releaseDelayMs: 120 } : { enabled: false },
-
-    // 🎯 Aimbot (apenas flag para estudo)
     aimbot: settings.aimbot ? { enabled: true, mode: "logical", smoothing: 0.9 } : { enabled: false }
   };
 }
 
-/* =========================
-   GAMEPLAY EXTREMO
-   ========================= */
+// =========================
+// GAMEPLAY EXTREMO
+// =========================
 function buildGameplay(settings) {
   return {
     precision: settings.dynamicPrecision ? 1.0 : 0.9,
     stability: settings.weaponStability ? 1.0 : 0.9,
     recoil: settings.recoilControl ? 0.01 : 0.2,
-    aimAssist: buildAimAssist(settings)
+    aimAssist: buildAimAssist(settings),
+    sensitivity: settings.sensitivity
   };
 }
 
-/* =========================
-   APLICAR CONFIGURAÇÃO
-   ========================= */
+// =========================
+// APLICAR CONFIGURAÇÃO
+// =========================
 document.getElementById("apply").addEventListener("click", () => {
   const settings = collectSettings();
 
@@ -111,25 +110,17 @@ document.getElementById("apply").addEventListener("click", () => {
     }
   };
 
-  // Comunicação direta com Unity (se existir)
-  if (window.Unity) {
-    window.Unity.call(JSON.stringify(finalConfig));
-  }
-
-  // Salvar local
+  if (window.Unity) window.Unity.call(JSON.stringify(finalConfig));
   localStorage.setItem("zxiter_config", JSON.stringify(finalConfig));
-  alert("Assistência de mira avançada aplicada.");
+  alert("Assistência de mira aplicada.");
 });
 
-/* =========================
-   EXPORTAR CONFIGURAÇÃO
-   ========================= */
-function exportConfig() {
+// =========================
+// EXPORTAR CONFIGURAÇÃO
+// =========================
+document.getElementById("export").addEventListener("click", () => {
   const config = localStorage.getItem("zxiter_config");
-  if (!config) {
-    alert("Nenhuma configuração salva para exportar.");
-    return;
-  }
+  if (!config) { alert("Nenhuma configuração salva para exportar."); return; }
 
   const blob = new Blob([config], { type: "application/json" });
   const url = URL.createObjectURL(blob);
@@ -140,11 +131,28 @@ function exportConfig() {
   a.click();
 
   URL.revokeObjectURL(url);
-}
+});
 
-/* =========================
-   LOAD CONFIGURAÇÃO SALVA
-   ========================= */
+// =========================
+// RESETAR PAINEL
+// =========================
+document.getElementById("reset").addEventListener("click", () => {
+  // Reset checkboxes
+  document.querySelectorAll("input[type=checkbox]").forEach(cb => cb.checked = false);
+  // Reset hitbox
+  document.getElementById("target").value = "head";
+  // Reset sensibilidade
+  document.getElementById("sensX").value = 50;
+  document.getElementById("sensY").value = 50;
+  document.getElementById("sensZ").value = 50;
+  // Remove configuração salva
+  localStorage.removeItem("zxiter_config");
+  alert("Painel resetado e configurações removidas.");
+});
+
+// =========================
+// LOAD CONFIGURAÇÃO SALVA
+// =========================
 window.addEventListener("load", () => {
   const saved = localStorage.getItem("zxiter_config");
   if (!saved) return;
@@ -160,4 +168,22 @@ window.addEventListener("load", () => {
 
   // Restaurar hitbox alvo
   document.getElementById("target").value = aim.priority || "head";
+
+  // Restaurar sensibilidade
+  if (cfg.gameplay?.sensitivity) {
+    document.getElementById("sensX").value = cfg.gameplay.sensitivity.x;
+    document.getElementById("sensY").value = cfg.gameplay.sensitivity.y;
+    document.getElementById("sensZ").value = cfg.gameplay.sensitivity.z;
+  }
 });
+
+// =========================
+// REGISTRAR SERVICE WORKER PWA
+// =========================
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(() => console.log("Service Worker registrado"))
+      .catch(err => console.error("SW erro:", err));
+  });
+       }
