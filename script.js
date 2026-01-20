@@ -1,71 +1,83 @@
-const CONFIG_KEY = "zxiter_trick_config_v1";
+const CONFIG_KEY = "zxiter_trick_config_v2";
 
+/* ---------- TABS ---------- */
 function openTab(id) {
   document.querySelectorAll(".tab").forEach(tab => {
     tab.classList.remove("active");
   });
   document.getElementById(id).classList.add("active");
 }
-openTab("precision");
+openTab("aim");
 
-function getRange(id) {
-  return parseInt(document.getElementById(id).value, 10) / 100;
+/* ---------- CHECKBOX ---------- */
+function isChecked(id) {
+  return document.getElementById(id).checked;
 }
 
-function lerp(min, max, t) {
-  return min + (max - min) * t;
-}
+/* ---------- CÁLCULOS BASE (APENAS PARÂMETROS) ---------- */
+function calculateAimAssist(enabled) {
+  if (!enabled) {
+    return {
+      enabled: false
+    };
+  }
 
-function calculatePrecision(level) {
   return {
-    baseSpread: lerp(1.2, 0.05, level),
-    aimMultiplier: lerp(0.6, 0.25, level),
-    movementPenalty: lerp(1.6, 1.05, level),
-    distancePenalty: lerp(0.03, 0.005, level),
-    dynamicAssist: lerp(0.85, 0.6, level)
+    enabled: true,
+    assistStrength: 0.65,
+    slowdownNearTarget: 0.4,
+    magnetism: 0.3,
+    dynamicAdjustment: true
   };
 }
 
-function calculateStability(level) {
+function calculateAimLock(enabled) {
   return {
-    aimStability: lerp(0.5, 0.95, level),
-    smoothing: lerp(0.2, 0.85, level),
-    stickiness: lerp(0.1, 0.7, level),
-    swayReduction: lerp(0.0, 0.9, level)
+    enabled,
+    lockStrength: enabled ? 0.8 : 0,
+    releaseDelayMs: 120
   };
 }
 
-function calculateRecoil(level) {
+function calculateAimbot(enabled) {
+  // ⚠️ APENAS FLAG DE ESTUDO / JOGO PRÓPRIO
   return {
-    verticalRecoil: lerp(1.0, 0.08, level),
-    horizontalRecoil: lerp(0.6, 0.05, level),
-    recoverySpeed: lerp(6, 20, level),
-    recoilSmoothing: lerp(0.2, 0.9, level)
+    enabled,
+    mode: "logical", // sem mover câmera
+    prediction: false,
+    smoothing: 0.9
   };
 }
 
+/* ---------- CONFIG ---------- */
 function getConfig() {
-  const p = getRange("precisionValue");
-  const s = getRange("stabilityValue");
-  const r = getRange("recoilValue");
+  const aimAssist = isChecked("aimAssist");
+  const aimLock = isChecked("aimLock");
+  const aimbot = isChecked("aimbot");
 
   return {
     app: "ZXiter Trick",
-    game: "Free Tire",
-    package: "com.dts.freefiremax",
-    precision: calculatePrecision(p),
-    stability: calculateStability(s),
-    recoil: calculateRecoil(r),
-    raw: { p, s, r },
+    type: "Aim Configuration",
+    usage: "own_game_study_only",
+
+    aimAssistant: {
+      enabled: aimAssist || aimLock || aimbot,
+      aimAssist: calculateAimAssist(aimAssist),
+      aimLock: calculateAimLock(aimLock),
+      aimbot: calculateAimbot(aimbot)
+    },
+
     timestamp: Date.now()
   };
 }
 
+/* ---------- SALVAR ---------- */
 function saveConfig() {
   localStorage.setItem(CONFIG_KEY, JSON.stringify(getConfig()));
-  alert("Configuração salva");
+  alert("Configuração salva com sucesso");
 }
 
+/* ---------- EXPORTAR ---------- */
 function exportConfig() {
   const data = JSON.stringify(getConfig(), null, 2);
   const blob = new Blob([data], { type: "application/json" });
@@ -73,17 +85,25 @@ function exportConfig() {
 
   const a = document.createElement("a");
   a.href = url;
-  a.download = "zxiter_trick_free_tire_config.json";
+  a.download = "aim_assistant_config.json";
   a.click();
 
   URL.revokeObjectURL(url);
 }
 
+/* ---------- LOAD ---------- */
 window.addEventListener("load", () => {
   const saved = localStorage.getItem(CONFIG_KEY);
   if (!saved) return;
+
   const cfg = JSON.parse(saved);
-  document.getElementById("precisionValue").value = cfg.raw.p * 100;
-  document.getElementById("stabilityValue").value = cfg.raw.s * 100;
-  document.getElementById("recoilValue").value = cfg.raw.r * 100;
+
+  document.getElementById("aimAssist").checked =
+    cfg.aimAssistant?.aimAssist?.enabled || false;
+
+  document.getElementById("aimLock").checked =
+    cfg.aimAssistant?.aimLock?.enabled || false;
+
+  document.getElementById("aimbot").checked =
+    cfg.aimAssistant?.aimbot?.enabled || false;
 });
