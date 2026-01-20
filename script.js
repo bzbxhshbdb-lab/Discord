@@ -1,109 +1,163 @@
-const CONFIG_KEY = "zxiter_trick_config_v2";
+/* =========================
+   ABAS
+   ========================= */
+const tabs = document.querySelectorAll(".tab");
+const contents = document.querySelectorAll(".content");
 
-/* ---------- TABS ---------- */
-function openTab(id) {
-  document.querySelectorAll(".tab").forEach(tab => {
-    tab.classList.remove("active");
+tabs.forEach(tab => {
+  tab.addEventListener("click", () => {
+    tabs.forEach(t => t.classList.remove("active"));
+    contents.forEach(c => c.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById(tab.dataset.tab).classList.add("active");
   });
-  document.getElementById(id).classList.add("active");
-}
-openTab("aim");
+});
 
-/* ---------- CHECKBOX ---------- */
-function isChecked(id) {
-  return document.getElementById(id).checked;
+/* =========================
+   COLETAR CONFIGURAÇÃO
+   ========================= */
+function collectSettings() {
+  const config = {};
+  
+  // Checkboxes
+  document.querySelectorAll("input[type=checkbox]").forEach(cb => {
+    config[cb.dataset.key] = cb.checked;
+  });
+
+  // Hitbox alvo
+  config.target = document.getElementById("target").value;
+
+  return config;
 }
 
-/* ---------- CÁLCULOS BASE (APENAS PARÂMETROS) ---------- */
-function calculateAimAssist(enabled) {
-  if (!enabled) {
-    return {
-      enabled: false
-    };
+/* =========================
+   AIM ASSIST AVANÇADO
+   ========================= */
+function buildAimAssist(settings) {
+  if (!settings.aimAssist && !settings.aimLock && !settings.aimbot) {
+    return { enabled: false };
   }
 
   return {
-    enabled: true,
-    assistStrength: 0.65,
-    slowdownNearTarget: 0.4,
-    magnetism: 0.3,
-    dynamicAdjustment: true
+    enabled: settings.aimAssist || settings.aimLock || settings.aimbot,
+
+    // 🔥 Magnetismo suave
+    magnetism: settings.aimAssist ? 0.85 : 0.0,
+
+    // 🔥 Redução de sensibilidade (quando habilitado)
+    slowdown: settings.aimAssist ? 0.5 : 0.0,
+
+    // 🔥 Correção angular suave (não gira sozinho)
+    correction: settings.aimAssist ? 0.8 : 0.0,
+
+    // 🔥 Cone de mira
+    baseFov: 8.0,
+    minFov: 4.0,
+    dynamicFov: true,
+
+    // 🎯 Prioridade de hitbox
+    priority: settings.target || "head",
+
+    // ❌ nunca automático
+    autoRotate: false,
+    snap: false,
+
+    // 🔒 Aim Lock
+    aimLock: settings.aimLock ? { enabled: true, strength: 0.8, releaseDelayMs: 120 } : { enabled: false },
+
+    // 🎯 Aimbot (apenas flag para estudo)
+    aimbot: settings.aimbot ? { enabled: true, mode: "logical", smoothing: 0.9 } : { enabled: false }
   };
 }
 
-function calculateAimLock(enabled) {
+/* =========================
+   GAMEPLAY EXTREMO
+   ========================= */
+function buildGameplay(settings) {
   return {
-    enabled,
-    lockStrength: enabled ? 0.8 : 0,
-    releaseDelayMs: 120
+    precision: settings.dynamicPrecision ? 1.0 : 0.9,
+    stability: settings.weaponStability ? 1.0 : 0.9,
+    recoil: settings.recoilControl ? 0.01 : 0.2,
+    aimAssist: buildAimAssist(settings)
   };
 }
 
-function calculateAimbot(enabled) {
-  // ⚠️ APENAS FLAG DE ESTUDO / JOGO PRÓPRIO
-  return {
-    enabled,
-    mode: "logical", // sem mover câmera
-    prediction: false,
-    smoothing: 0.9
-  };
-}
+/* =========================
+   APLICAR CONFIGURAÇÃO
+   ========================= */
+document.getElementById("apply").addEventListener("click", () => {
+  const settings = collectSettings();
 
-/* ---------- CONFIG ---------- */
-function getConfig() {
-  const aimAssist = isChecked("aimAssist");
-  const aimLock = isChecked("aimLock");
-  const aimbot = isChecked("aimbot");
-
-  return {
+  const finalConfig = {
     app: "ZXiter Trick",
-    type: "Aim Configuration",
-    usage: "own_game_study_only",
+    displayName: "Free Fire Max",
+    package: "com.dts.freefiremax",
 
-    aimAssistant: {
-      enabled: aimAssist || aimLock || aimbot,
-      aimAssist: calculateAimAssist(aimAssist),
-      aimLock: calculateAimLock(aimLock),
-      aimbot: calculateAimbot(aimbot)
+    performance: {
+      antilag: settings.antilag,
+      pingBoost: settings.pingBoost,
+      fpsBoost: settings.fpsBoost,
+      reduceDelay: settings.reduceDelay,
+      lowLatency: settings.lowLatency
     },
 
-    timestamp: Date.now()
+    gameplay: buildGameplay(settings),
+
+    system: {
+      advancedSync: settings.advancedSync,
+      smartCache: settings.smartCache,
+      processPriority: settings.processPriority,
+      debugMode: settings.debugMode
+    }
   };
-}
 
-/* ---------- SALVAR ---------- */
-function saveConfig() {
-  localStorage.setItem(CONFIG_KEY, JSON.stringify(getConfig()));
-  alert("Configuração salva com sucesso");
-}
+  // Comunicação direta com Unity (se existir)
+  if (window.Unity) {
+    window.Unity.call(JSON.stringify(finalConfig));
+  }
 
-/* ---------- EXPORTAR ---------- */
+  // Salvar local
+  localStorage.setItem("zxiter_config", JSON.stringify(finalConfig));
+  alert("Assistência de mira avançada aplicada.");
+});
+
+/* =========================
+   EXPORTAR CONFIGURAÇÃO
+   ========================= */
 function exportConfig() {
-  const data = JSON.stringify(getConfig(), null, 2);
-  const blob = new Blob([data], { type: "application/json" });
+  const config = localStorage.getItem("zxiter_config");
+  if (!config) {
+    alert("Nenhuma configuração salva para exportar.");
+    return;
+  }
+
+  const blob = new Blob([config], { type: "application/json" });
   const url = URL.createObjectURL(blob);
 
   const a = document.createElement("a");
   a.href = url;
-  a.download = "aim_assistant_config.json";
+  a.download = "zxiter_aim_config.json";
   a.click();
 
   URL.revokeObjectURL(url);
 }
 
-/* ---------- LOAD ---------- */
+/* =========================
+   LOAD CONFIGURAÇÃO SALVA
+   ========================= */
 window.addEventListener("load", () => {
-  const saved = localStorage.getItem(CONFIG_KEY);
+  const saved = localStorage.getItem("zxiter_config");
   if (!saved) return;
 
   const cfg = JSON.parse(saved);
+  const aim = cfg.gameplay?.aimAssist || {};
 
-  document.getElementById("aimAssist").checked =
-    cfg.aimAssistant?.aimAssist?.enabled || false;
+  // Restaurar checkboxes
+  document.querySelectorAll("input[type=checkbox]").forEach(cb => {
+    const key = cb.dataset.key;
+    cb.checked = !!cfg.performance[key] || !!cfg.system[key] || !!aim[key];
+  });
 
-  document.getElementById("aimLock").checked =
-    cfg.aimAssistant?.aimLock?.enabled || false;
-
-  document.getElementById("aimbot").checked =
-    cfg.aimAssistant?.aimbot?.enabled || false;
+  // Restaurar hitbox alvo
+  document.getElementById("target").value = aim.priority || "head";
 });
