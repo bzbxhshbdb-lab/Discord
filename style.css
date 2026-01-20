@@ -1,3 +1,6 @@
+/* =========================
+   RESET E CONFIGURAÇÕES BASE
+   ========================= */
 body {
   margin: 0;
   font-family: Arial, sans-serif;
@@ -14,13 +17,14 @@ body {
   border: 2px solid #ffd700;
   box-shadow: 0 0 20px #ffd70055;
   padding: 20px;
-  width: 320px;
+  width: 340px;
   border-radius: 12px;
+  text-align: center;
 }
 
 h1 {
-  text-align: center;
   margin: 0;
+  font-size: 22px;
 }
 
 h1 span {
@@ -28,14 +32,18 @@ h1 span {
 }
 
 .subtitle {
-  text-align: center;
   font-size: 12px;
   opacity: 0.8;
+  margin-bottom: 15px;
 }
 
+/* =========================
+   ABAS
+   ========================= */
 .tabs {
   display: flex;
   margin-top: 15px;
+  border-bottom: 2px solid #ffd70055;
 }
 
 .tab {
@@ -45,6 +53,12 @@ h1 span {
   color: #ffd700;
   padding: 8px;
   cursor: pointer;
+  transition: 0.3s;
+  font-weight: bold;
+}
+
+.tab:hover {
+  background: #222;
 }
 
 .tab.active {
@@ -52,9 +66,13 @@ h1 span {
   color: #000;
 }
 
+/* =========================
+   CONTEÚDOS DAS ABAS
+   ========================= */
 .content {
   display: none;
   margin-top: 15px;
+  text-align: left;
 }
 
 .content.active {
@@ -63,20 +81,80 @@ h1 span {
 
 label {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   font-size: 14px;
 }
 
-select, button {
+select, input[type=number] {
+  width: 100%;
+  padding: 6px;
+  margin-top: 4px;
+  border-radius: 6px;
+  border: 1px solid #ffd70088;
+  background: #1a1a1a;
+  color: #ffd700;
+  font-size: 14px;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* =========================
+   BOTÕES
+   ========================= */
+button {
   width: 100%;
   margin-top: 10px;
-  padding: 8px;
+  padding: 10px;
   border-radius: 6px;
   border: none;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
 }
 
 button#apply {
   background: linear-gradient(90deg, #ffd700, #ffae00);
-  font-weight: bold;
-  cursor: pointer;
+  color: #000;
+}
+
+button#apply:hover {
+  background: linear-gradient(90deg, #ffe75c, #ffbd00);
+}
+
+button#export {
+  background: #1a1a1a;
+  color: #ffd700;
+  border: 1px solid #ffd700;
+}
+
+button#export:hover {
+  background: #222;
+}
+
+button#reset {
+  background: #ff4d4d;
+  color: #fff;
+  margin-top: 5px;
+}
+
+button#reset:hover {
+  background: #ff1a1a;
+}
+
+/* =========================
+   SENSIBILIDADE
+   ========================= */
+#sensitivity label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#sensitivity input[type=number] {
+  width: 60px;
+  text-align: center;
 }
