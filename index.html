@@ -1,66 +1,15 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Free Fire Max</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>Free Fire Max</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- PWA -->
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#FFD700">
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#FFD700">
 
-  <!-- Estilo Neon -->
-  <link rel="stylesheet" href="style.css">
-  <style>
-    body, html {
-      margin: 0;
-      padding: 0;
-      font-family: sans-serif;
-      background: #000;
-      color: #FFD700;
-    }
-
-    .panel {
-      max-width: 400px;
-      margin: 20px auto;
-      padding: 20px;
-      background: #111;
-      border-radius: 12px;
-      box-shadow: 0 0 15px #FFD700;
-    }
-
-    h1 span { color: #FFD700; }
-
-    .tabs {
-      display: flex;
-      justify-content: space-around;
-      margin-bottom: 10px;
-    }
-
-    .tab {
-      padding: 10px;
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-    }
-
-    .tab.active { border-color: #FFD700; }
-
-    .content { display: none; margin-top: 10px; }
-    .content.active { display: block; }
-
-    label { display: block; margin: 5px 0; }
-    select { width: 100%; margin-top: 5px; padding: 5px; }
-
-    button {
-      margin-top: 10px;
-      padding: 10px;
-      width: 100%;
-      background: #FFD700;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-  </style>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -75,7 +24,7 @@
     <button class="tab" data-tab="system">Sistema</button>
   </div>
 
-  <!-- Conteúdo Performance -->
+  <!-- Performance -->
   <div class="content active" id="performance">
     <label><input type="checkbox" data-key="antilag"> Anti-Lag</label>
     <label><input type="checkbox" data-key="pingBoost"> Ping Melhorado</label>
@@ -84,15 +33,14 @@
     <label><input type="checkbox" data-key="lowLatency"> Baixa Latência</label>
   </div>
 
-  <!-- Conteúdo Gameplay -->
+  <!-- Gameplay -->
   <div class="content" id="gameplay">
     <label><input type="checkbox" data-key="aimAssist"> Assistência de Mira</label>
     <label><input type="checkbox" data-key="aimLock"> Aim Lock</label>
-    <label><input type="checkbox" data-key="aimbot"> Aimbot (estudo)</label>
+    <label><input type="checkbox" data-key="aimbot"> Aimbot</label>
     <label><input type="checkbox" data-key="weaponStability"> Estabilidade</label>
     <label><input type="checkbox" data-key="dynamicPrecision"> Precisão</label>
     <label><input type="checkbox" data-key="recoilControl"> Recuo</label>
-
     <select id="target">
       <option value="head">Cabeça</option>
       <option value="neck">Pescoço</option>
@@ -100,7 +48,7 @@
     </select>
   </div>
 
-  <!-- Conteúdo Sistema -->
+  <!-- Sistema -->
   <div class="content" id="system">
     <label><input type="checkbox" data-key="advancedSync"> Sincronização</label>
     <label><input type="checkbox" data-key="smartCache"> Cache</label>
@@ -112,131 +60,120 @@
   <button id="export">EXPORTAR CONFIGURAÇÃO</button>
 </div>
 
-<!-- Bridge segura com Unity (simulado para teste) -->
 <script>
-  if (!window.Unity) {
-    window.Unity = { call: function(data) { console.log("Config enviada para Unity:", data); } };
-  }
+if (!window.Unity) {
+  window.Unity = { call: function(data) { console.log("Config enviada para Unity:", data); } };
+}
+
+// ABAS
+const tabs = document.querySelectorAll(".tab");
+const contents = document.querySelectorAll(".content");
+tabs.forEach(tab => {
+  tab.addEventListener("click", () => {
+    tabs.forEach(t=>t.classList.remove("active"));
+    contents.forEach(c=>c.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById(tab.dataset.tab).classList.add("active");
+  });
+});
+
+// CONFIGURAÇÕES
+function collectSettings(){
+  const cfg={};
+  document.querySelectorAll("input[type=checkbox]").forEach(cb=>cfg[cb.dataset.key]=cb.checked);
+  cfg.target=document.getElementById("target").value;
+  return cfg;
+}
+
+function buildAimAssist(settings){
+  if(!settings.aimAssist&&!settings.aimLock&&!settings.aimbot)return {enabled:false};
+  return {
+    enabled:true,
+    magnetism: settings.aimAssist?0.85:0,
+    slowdown: settings.aimAssist?0.5:0,
+    correction: settings.aimAssist?0.8:0,
+    baseFov:8,
+    minFov:4,
+    dynamicFov:true,
+    priority: settings.target,
+    autoRotate:false,
+    snap:false,
+    aimLock: settings.aimLock?{enabled:true,strength:0.8,releaseDelayMs:120}:{enabled:false},
+    aimbot: settings.aimbot?{enabled:true,mode:"logical",smoothing:0.9}:{enabled:false}
+  };
+}
+
+function buildGameplay(settings){
+  return {
+    precision: settings.dynamicPrecision?1:0.9,
+    stability: settings.weaponStability?1:0.9,
+    recoil: settings.recoilControl?0.01:0.2,
+    aimAssist: buildAimAssist(settings)
+  };
+}
+
+// APLICAR
+document.getElementById("apply").addEventListener("click",()=>{
+  const settings=collectSettings();
+  const finalConfig={
+    app:"ZXiter Trick",
+    displayName:"Free Fire Max",
+    package:"com.dts.freefiremax",
+    performance:{
+      antilag:settings.antilag,
+      pingBoost:settings.pingBoost,
+      fpsBoost:settings.fpsBoost,
+      reduceDelay:settings.reduceDelay,
+      lowLatency:settings.lowLatency
+    },
+    gameplay: buildGameplay(settings),
+    system:{
+      advancedSync:settings.advancedSync,
+      smartCache:settings.smartCache,
+      processPriority:settings.processPriority,
+      debugMode:settings.debugMode
+    }
+  };
+  if(window.Unity)window.Unity.call(JSON.stringify(finalConfig));
+  localStorage.setItem("zxiter_config",JSON.stringify(finalConfig));
+  alert("Assistência de mira aplicada.");
+});
+
+// EXPORTAR
+document.getElementById("export").addEventListener("click",()=>{
+  const config=localStorage.getItem("zxiter_config");
+  if(!config){alert("Nenhuma configuração salva.");return;}
+  const blob=new Blob([config],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;
+  a.download="zxiter_aim_config.json";
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+// LOAD CONFIG
+window.addEventListener("load",()=>{
+  const saved=localStorage.getItem("zxiter_config");
+  if(!saved)return;
+  const cfg=JSON.parse(saved);
+  document.querySelectorAll("input[type=checkbox]").forEach(cb=>{
+    const key=cb.dataset.key;
+    cb.checked=!!cfg.performance[key]||!!cfg.system[key]||!!cfg.gameplay.aimAssist[key];
+  });
+  document.getElementById("target").value=cfg.gameplay.aimAssist.priority||"head";
+});
 </script>
 
-<!-- Script principal -->
+<!-- SERVICE WORKER -->
 <script>
-  // ==================== ABAS ====================
-  const tabs = document.querySelectorAll(".tab");
-  const contents = document.querySelectorAll(".content");
-
-  tabs.forEach(tab => {
-    tab.addEventListener("click", () => {
-      tabs.forEach(t => t.classList.remove("active"));
-      contents.forEach(c => c.classList.remove("active"));
-      tab.classList.add("active");
-      document.getElementById(tab.dataset.tab).classList.add("active");
-    });
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('./sw.js')
+      .then(()=>console.log("SW registrado"))
+      .catch(err=>console.error("Erro SW:",err));
   });
-
-  // ==================== FUNÇÕES ====================
-  function collectSettings() {
-    const config = {};
-    document.querySelectorAll("input[type=checkbox]").forEach(cb => {
-      config[cb.dataset.key] = cb.checked;
-    });
-    config.target = document.getElementById("target").value;
-    return config;
-  }
-
-  function buildAimAssist(settings) {
-    if (!settings.aimAssist && !settings.aimLock && !settings.aimbot) return { enabled: false };
-
-    return {
-      enabled: settings.aimAssist || settings.aimLock || settings.aimbot,
-      magnetism: settings.aimAssist ? 0.85 : 0,
-      slowdown: settings.aimAssist ? 0.5 : 0,
-      correction: settings.aimAssist ? 0.8 : 0,
-      baseFov: 8,
-      minFov: 4,
-      dynamicFov: true,
-      priority: settings.target,
-      autoRotate: false,
-      snap: false,
-      aimLock: settings.aimLock ? { enabled: true, strength: 0.8, releaseDelayMs: 120 } : { enabled: false },
-      aimbot: settings.aimbot ? { enabled: true, mode: "logical", smoothing: 0.9 } : { enabled: false }
-    };
-  }
-
-  function buildGameplay(settings) {
-    return {
-      precision: settings.dynamicPrecision ? 1 : 0.9,
-      stability: settings.weaponStability ? 1 : 0.9,
-      recoil: settings.recoilControl ? 0.01 : 0.2,
-      aimAssist: buildAimAssist(settings)
-    };
-  }
-
-  // ==================== APLICAR ====================
-  document.getElementById("apply").addEventListener("click", () => {
-    const settings = collectSettings();
-    const finalConfig = {
-      app: "ZXiter Trick",
-      displayName: "Free Fire Max",
-      package: "com.dts.freefiremax",
-      performance: {
-        antilag: settings.antilag,
-        pingBoost: settings.pingBoost,
-        fpsBoost: settings.fpsBoost,
-        reduceDelay: settings.reduceDelay,
-        lowLatency: settings.lowLatency
-      },
-      gameplay: buildGameplay(settings),
-      system: {
-        advancedSync: settings.advancedSync,
-        smartCache: settings.smartCache,
-        processPriority: settings.processPriority,
-        debugMode: settings.debugMode
-      }
-    };
-
-    if (window.Unity) window.Unity.call(JSON.stringify(finalConfig));
-    localStorage.setItem("zxiter_config", JSON.stringify(finalConfig));
-    alert("Assistência de mira aplicada.");
-  });
-
-  // ==================== EXPORTAR ====================
-  document.getElementById("export").addEventListener("click", () => {
-    const config = localStorage.getItem("zxiter_config");
-    if (!config) { alert("Nenhuma configuração salva."); return; }
-    const blob = new Blob([config], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "zxiter_aim_config.json";
-    a.click();
-    URL.revokeObjectURL(url);
-  });
-
-  // ==================== LOAD CONFIG ====================
-  window.addEventListener("load", () => {
-    const saved = localStorage.getItem("zxiter_config");
-    if (!saved) return;
-    const cfg = JSON.parse(saved);
-
-    document.querySelectorAll("input[type=checkbox]").forEach(cb => {
-      const key = cb.dataset.key;
-      cb.checked = !!cfg.performance[key] || !!cfg.system[key] || !!cfg.gameplay.aimAssist[key];
-    });
-
-    document.getElementById("target").value = cfg.gameplay.aimAssist.priority || "head";
-  });
-</script>
-
-<!-- PWA Service Worker -->
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js')
-        .then(() => console.log("SW registrado"))
-        .catch(err => console.error("Erro SW:", err));
-    });
-  }
+}
 </script>
 
 </body>
