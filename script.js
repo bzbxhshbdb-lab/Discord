@@ -1,13 +1,4 @@
 // =========================
-// UNITY BRIDGE SIMULADA
-// =========================
-if(!window.Unity) window.Unity = {
-  call: function(data) {
-    console.log("Config enviada para Unity:", data);
-  }
-};
-
-// =========================
 // ABAS
 // =========================
 const tabs = document.querySelectorAll(".tab");
@@ -26,58 +17,40 @@ tabs.forEach(tab => {
 // COLETAR CONFIGURAÇÃO
 // =========================
 function collectSettings() {
-  const config = {};
+  const cfg = {};
 
-  // Checkboxes
   document.querySelectorAll("input[type=checkbox]").forEach(cb => {
-    config[cb.dataset.key] = cb.checked;
+    cfg[cb.dataset.key] = cb.checked;
   });
 
-  // Hitbox alvo
-  config.target = document.getElementById("target").value;
+  cfg.target = document.getElementById("target").value;
 
-  // Sensibilidade
-  config.sensitivity = {
-    x: parseFloat(document.getElementById("sensX").value),
-    y: parseFloat(document.getElementById("sensY").value),
-    z: parseFloat(document.getElementById("sensZ").value)
+  cfg.sensitivity = {
+    x: Number(document.getElementById("sensX").value),
+    y: Number(document.getElementById("sensY").value),
+    z: Number(document.getElementById("sensZ").value)
   };
 
-  return config;
+  return cfg;
 }
 
 // =========================
-// AIM ASSIST AVANÇADO
+// AIM ASSIST (LÓGICO)
 // =========================
-function buildAimAssist(settings) {
-  if (!settings.aimAssist && !settings.aimLock && !settings.aimbot) return { enabled: false };
+function buildAimAssist(s) {
+  if (!s.aimAssist && !s.aimLock && !s.aimbot) {
+    return { enabled: false };
+  }
 
   return {
-    enabled: settings.aimAssist || settings.aimLock || settings.aimbot,
-    magnetism: settings.aimAssist ? 0.85 : 0,
-    slowdown: settings.aimAssist ? 0.5 : 0,
-    correction: settings.aimAssist ? 0.8 : 0,
-    baseFov: 8.0,
-    minFov: 4.0,
-    dynamicFov: true,
-    priority: settings.target || "head",
-    autoRotate: false,
-    snap: false,
-    aimLock: settings.aimLock ? { enabled: true, strength: 0.8, releaseDelayMs: 120 } : { enabled: false },
-    aimbot: settings.aimbot ? { enabled: true, mode: "logical", smoothing: 0.9 } : { enabled: false }
-  };
-}
-
-// =========================
-// GAMEPLAY EXTREMO
-// =========================
-function buildGameplay(settings) {
-  return {
-    precision: settings.dynamicPrecision ? 1.0 : 0.9,
-    stability: settings.weaponStability ? 1.0 : 0.9,
-    recoil: settings.recoilControl ? 0.01 : 0.2,
-    aimAssist: buildAimAssist(settings),
-    sensitivity: settings.sensitivity
+    enabled: true,
+    magnetism: s.aimAssist ? 0.85 : 0,
+    slowdown: s.aimAssist ? 0.5 : 0,
+    correction: s.aimAssist ? 0.8 : 0,
+    fov: 8,
+    priority: s.target || "head",
+    aimLock: !!s.aimLock,
+    aimbot: !!s.aimbot
   };
 }
 
@@ -85,69 +58,103 @@ function buildGameplay(settings) {
 // APLICAR CONFIGURAÇÃO
 // =========================
 document.getElementById("apply").addEventListener("click", () => {
-  const settings = collectSettings();
+  const s = collectSettings();
 
   const finalConfig = {
     app: "ZXiter Trick",
-    displayName: "Free Fire Max",
-    package: "com.dts.freefiremax",
-
-    performance: {
-      antilag: settings.antilag,
-      pingBoost: settings.pingBoost,
-      fpsBoost: settings.fpsBoost,
-      reduceDelay: settings.reduceDelay,
-      lowLatency: settings.lowLatency
+    gameplay: {
+      precision: s.dynamicPrecision || false,
+      stability: s.weaponStability || false,
+      recoil: s.recoilControl || false,
+      aimAssist: buildAimAssist(s),
+      sensitivity: s.sensitivity
     },
-
-    gameplay: buildGameplay(settings),
-
+    performance: {
+      antilag: s.antilag,
+      pingBoost: s.pingBoost,
+      fpsBoost: s.fpsBoost,
+      reduceDelay: s.reduceDelay,
+      lowLatency: s.lowLatency
+    },
     system: {
-      advancedSync: settings.advancedSync,
-      smartCache: settings.smartCache,
-      processPriority: settings.processPriority,
-      debugMode: settings.debugMode
-    }
+      advancedSync: s.advancedSync,
+      smartCache: s.smartCache,
+      processPriority: s.processPriority,
+      debugMode: s.debugMode
+    },
+    timestamp: Date.now()
   };
 
-  if (window.Unity) window.Unity.call(JSON.stringify(finalConfig));
   localStorage.setItem("zxiter_config", JSON.stringify(finalConfig));
-  alert("Assistência de mira aplicada.");
+  alert("Configuração aplicada e salva.");
 });
 
 // =========================
-// EXPORTAR CONFIGURAÇÃO
+// EXPORTAR CONFIG (JSON)
 // =========================
 document.getElementById("export").addEventListener("click", () => {
-  const config = localStorage.getItem("zxiter_config");
-  if (!config) { alert("Nenhuma configuração salva para exportar."); return; }
+  const cfg = localStorage.getItem("zxiter_config");
+  if (!cfg) return alert("Nenhuma configuração salva.");
 
-  const blob = new Blob([config], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-
+  const blob = new Blob([cfg], { type: "application/json" });
   const a = document.createElement("a");
-  a.href = url;
-  a.download = "zxiter_aim_config.json";
+  a.href = URL.createObjectURL(blob);
+  a.download = "zxiter_config.json";
   a.click();
+  URL.revokeObjectURL(a.href);
+});
 
-  URL.revokeObjectURL(url);
+// =========================
+// DOWNLOAD ZIP (DATA + 20 FILES)
+// REQUER JSZIP NO HTML
+// =========================
+document.getElementById("downloadData").addEventListener("click", async () => {
+  if (typeof JSZip === "undefined") {
+    alert("JSZip não carregado");
+    return;
+  }
+
+  const zip = new JSZip();
+  const folder = zip.folder("data");
+
+  const sensitivity = {
+    x: Number(document.getElementById("sensX").value),
+    y: Number(document.getElementById("sensY").value),
+    z: Number(document.getElementById("sensZ").value)
+  };
+
+  for (let i = 1; i <= 20; i++) {
+    folder.file(
+      `connection_${i}.json`,
+      JSON.stringify({
+        id: i,
+        type: "game_connection",
+        sensitivity,
+        createdAt: Date.now()
+      }, null, 2)
+    );
+  }
+
+  const blob = await zip.generateAsync({ type: "blob" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "data_connections.zip";
+  a.click();
+  URL.revokeObjectURL(a.href);
 });
 
 // =========================
 // RESETAR PAINEL
 // =========================
 document.getElementById("reset").addEventListener("click", () => {
-  // Reset checkboxes
-  document.querySelectorAll("input[type=checkbox]").forEach(cb => cb.checked = false);
-  // Reset hitbox
+  document.querySelectorAll("input").forEach(el => {
+    if (el.type === "checkbox") el.checked = false;
+    if (el.type === "number") el.value = 50;
+  });
+
   document.getElementById("target").value = "head";
-  // Reset sensibilidade
-  document.getElementById("sensX").value = 50;
-  document.getElementById("sensY").value = 50;
-  document.getElementById("sensZ").value = 50;
-  // Remove configuração salva
   localStorage.removeItem("zxiter_config");
-  alert("Painel resetado e configurações removidas.");
+  alert("Painel resetado.");
 });
 
 // =========================
@@ -158,32 +165,19 @@ window.addEventListener("load", () => {
   if (!saved) return;
 
   const cfg = JSON.parse(saved);
-  const aim = cfg.gameplay?.aimAssist || {};
 
-  // Restaurar checkboxes
   document.querySelectorAll("input[type=checkbox]").forEach(cb => {
     const key = cb.dataset.key;
-    cb.checked = !!cfg.performance[key] || !!cfg.system[key] || !!aim[key];
+    cb.checked = !!cfg.performance?.[key] || !!cfg.system?.[key] || false;
   });
 
-  // Restaurar hitbox alvo
-  document.getElementById("target").value = aim.priority || "head";
+  if (cfg.gameplay?.aimAssist?.priority) {
+    document.getElementById("target").value = cfg.gameplay.aimAssist.priority;
+  }
 
-  // Restaurar sensibilidade
   if (cfg.gameplay?.sensitivity) {
     document.getElementById("sensX").value = cfg.gameplay.sensitivity.x;
     document.getElementById("sensY").value = cfg.gameplay.sensitivity.y;
     document.getElementById("sensZ").value = cfg.gameplay.sensitivity.z;
   }
 });
-
-// =========================
-// REGISTRAR SERVICE WORKER PWA
-// =========================
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js')
-      .then(() => console.log("Service Worker registrado"))
-      .catch(err => console.error("SW erro:", err));
-  });
-       }
