@@ -181,3 +181,31 @@ window.addEventListener("load", () => {
     document.getElementById("sensZ").value = cfg.gameplay.sensitivity.z;
   }
 });
+// =========================
+// DOWNLOAD CONNECT (FILES/DATA)
+// =========================
+document.getElementById("downloadData").addEventListener("click", () => {
+  const files = [];
+  
+  for (let i = 1; i <= 20; i++) {
+    files.push(
+      `connect_${i}.json:\n` +
+      JSON.stringify({
+        id: i,
+        type: "external-connect",
+        path: "files/data",
+        timestamp: Date.now()
+      }, null, 2)
+    );
+  }
+
+  const blob = new Blob([files.join("\n\n")], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "connect_files_data.txt";
+  a.click();
+
+  URL.revokeObjectURL(url);
+});
