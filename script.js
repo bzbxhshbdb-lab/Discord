@@ -1,169 +1,80 @@
-// =========================
-// UNITY BRIDGE (SIMULADO)
-// =========================
-if (!window.Unity) {
-  window.Unity = {
-    call: function (data) {
-      console.log("Config enviada para Unity:", data);
-    }
-  };
-}
+document.addEventListener("DOMContentLoaded", () => {
 
-// =========================
-// ABAS
-// =========================
-const tabs = document.querySelectorAll(".tab");
-const contents = document.querySelectorAll(".content");
+  // BOTÕES
+  const applyBtn = document.getElementById("apply");
+  const downloadBtn = document.getElementById("downloadData");
+  const exportBtn = document.getElementById("export");
+  const resetBtn = document.getElementById("reset");
 
-tabs.forEach(tab => {
-  tab.addEventListener("click", () => {
-    tabs.forEach(t => t.classList.remove("active"));
-    contents.forEach(c => c.classList.remove("active"));
-    tab.classList.add("active");
-    document.getElementById(tab.dataset.tab).classList.add("active");
-  });
-});
-
-// =========================
-// COLETAR CONFIGURAÇÕES
-// =========================
-function collectSettings() {
-  const cfg = {};
-
-  document.querySelectorAll("input[type=checkbox]").forEach(cb => {
-    cfg[cb.dataset.key] = cb.checked;
-  });
-
-  cfg.target = document.getElementById("target").value;
-
-  cfg.sensitivity = {
-    x: Number(document.getElementById("sensX").value),
-    y: Number(document.getElementById("sensY").value),
-    z: Number(document.getElementById("sensZ").value)
-  };
-
-  return cfg;
-}
-
-// =========================
-// AIM ASSIST
-// =========================
-function buildAimAssist(s) {
-  if (!s.aimAssist && !s.aimLock && !s.aimbot) return { enabled: false };
-
-  return {
-    enabled: true,
-    magnetism: s.aimAssist ? 0.85 : 0,
-    slowdown: s.aimAssist ? 0.5 : 0,
-    correction: s.aimAssist ? 0.8 : 0,
-    priority: s.target,
-    aimLock: s.aimLock,
-    aimbot: s.aimbot,
-    autoRotate: false
-  };
-}
-
-// =========================
-// APLICAR CONFIG
-// =========================
-document.getElementById("apply").addEventListener("click", () => {
-  const s = collectSettings();
-
-  const finalConfig = {
-    app: "ZXiter Trick",
-    engine: "Unity",
-    gameplay: {
-      aimAssist: buildAimAssist(s),
-      precision: s.dynamicPrecision,
-      stability: s.weaponStability,
-      recoil: s.recoilControl,
-      sensitivity: s.sensitivity
-    },
-    system: {
-      antilag: s.antilag,
-      fpsBoost: s.fpsBoost,
-      pingBoost: s.pingBoost,
-      lowLatency: s.lowLatency
-    }
-  };
-
-  localStorage.setItem("zxiter_config", JSON.stringify(finalConfig));
-  Unity.call(JSON.stringify(finalConfig));
-  alert("Configurações aplicadas com sucesso.");
-});
-
-// =========================
-// DOWNLOAD CONNECT (ZIP)
-// =========================
-document.getElementById("downloadData").addEventListener("click", async () => {
-  const zip = new JSZip();
-  const folder = zip.folder("files/data");
-
-  for (let i = 1; i <= 20; i++) {
-    folder.file(
-      `connect_${i}.json`,
-      JSON.stringify({
-        id: i,
-        type: "unity-connect",
-        path: "files/data",
-        createdAt: new Date().toISOString()
-      }, null, 2)
-    );
+  if (!applyBtn || !downloadBtn || !exportBtn || !resetBtn) {
+    console.error("❌ Erro: Botões não encontrados");
+    return;
   }
 
-  const blob = await zip.generateAsync({ type: "blob" });
-  const url = URL.createObjectURL(blob);
-
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "connect_files_data.zip";
-  a.click();
-
-  URL.revokeObjectURL(url);
-});
-
-// =========================
-// EXPORTAR CONFIG
-// =========================
-document.getElementById("export").addEventListener("click", () => {
-  const data = localStorage.getItem("zxiter_config");
-  if (!data) return alert("Nenhuma config salva.");
-
-  const blob = new Blob([data], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "zxiter_config.json";
-  a.click();
-
-  URL.revokeObjectURL(url);
-});
-
-// =========================
-// RESET
-// =========================
-document.getElementById("reset").addEventListener("click", () => {
-  localStorage.removeItem("zxiter_config");
-  document.querySelectorAll("input").forEach(i => {
-    if (i.type === "checkbox") i.checked = false;
-    if (i.type === "number") i.value = 50;
+  // APLICAR CONFIG
+  applyBtn.addEventListener("click", () => {
+    alert("✅ Configurações aplicadas com sucesso!");
   });
-  document.getElementById("target").value = "head";
-  alert("Painel resetado.");
-});
 
-// =========================
-// LOAD AUTOMÁTICO
-// =========================
-window.addEventListener("load", () => {
-  const saved = localStorage.getItem("zxiter_config");
-  if (!saved) return;
+  // DOWNLOAD CONNECT
+  downloadBtn.addEventListener("click", () => {
+    const content = "ZXiter Connect\nStatus: Ativo";
+    const blob = new Blob([content], { type: "text/plain" });
 
-  const cfg = JSON.parse(saved);
-  const g = cfg.gameplay || {};
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "connect.txt";
+    link.click();
 
-  document.getElementById("sensX").value = g.sensitivity?.x ?? 50;
-  document.getElementById("sensY").value = g.sensitivity?.y ?? 50;
-  document.getElementById("sensZ").value = g.sensitivity?.z ?? 50;
+    URL.revokeObjectURL(link.href);
+  });
+
+  // EXPORTAR CONFIG
+  exportBtn.addEventListener("click", () => {
+    const config = {};
+
+    document.querySelectorAll("input[type='checkbox']").forEach(cb => {
+      config[cb.dataset.key] = cb.checked;
+    });
+
+    config.sensX = document.getElementById("sensX").value;
+    config.sensY = document.getElementById("sensY").value;
+    config.sensZ = document.getElementById("sensZ").value;
+    config.target = document.getElementById("target").value;
+
+    const blob = new Blob(
+      [JSON.stringify(config, null, 2)],
+      { type: "application/json" }
+    );
+
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "config.json";
+    link.click();
+
+    URL.revokeObjectURL(link.href);
+  });
+
+  // RESETAR PAINEL
+  resetBtn.addEventListener("click", () => {
+    document.querySelectorAll("input").forEach(input => {
+      if (input.type === "checkbox") input.checked = false;
+      if (input.type === "number") input.value = 50;
+    });
+
+    document.getElementById("target").value = "head";
+    alert("♻️ Painel resetado");
+  });
+
+  // ABAS
+  document.querySelectorAll(".tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".content").forEach(c => c.classList.remove("active"));
+
+      tab.classList.add("active");
+      document.getElementById(tab.dataset.tab).classList.add("active");
+    });
+  });
+
 });
