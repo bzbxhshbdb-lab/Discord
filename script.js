@@ -1,4 +1,15 @@
 // =========================
+// UNITY BRIDGE (SIMULADO)
+// =========================
+if (!window.Unity) {
+  window.Unity = {
+    call: function (data) {
+      console.log("Config enviada para Unity:", data);
+    }
+  };
+}
+
+// =========================
 // ABAS
 // =========================
 const tabs = document.querySelectorAll(".tab");
@@ -14,7 +25,7 @@ tabs.forEach(tab => {
 });
 
 // =========================
-// COLETAR CONFIGURAÇÃO
+// COLETAR CONFIGURAÇÕES
 // =========================
 function collectSettings() {
   const cfg = {};
@@ -35,177 +46,124 @@ function collectSettings() {
 }
 
 // =========================
-// AIM ASSIST (LÓGICO)
+// AIM ASSIST
 // =========================
 function buildAimAssist(s) {
-  if (!s.aimAssist && !s.aimLock && !s.aimbot) {
-    return { enabled: false };
-  }
+  if (!s.aimAssist && !s.aimLock && !s.aimbot) return { enabled: false };
 
   return {
     enabled: true,
     magnetism: s.aimAssist ? 0.85 : 0,
     slowdown: s.aimAssist ? 0.5 : 0,
     correction: s.aimAssist ? 0.8 : 0,
-    fov: 8,
-    priority: s.target || "head",
-    aimLock: !!s.aimLock,
-    aimbot: !!s.aimbot
+    priority: s.target,
+    aimLock: s.aimLock,
+    aimbot: s.aimbot,
+    autoRotate: false
   };
 }
 
 // =========================
-// APLICAR CONFIGURAÇÃO
+// APLICAR CONFIG
 // =========================
 document.getElementById("apply").addEventListener("click", () => {
   const s = collectSettings();
 
   const finalConfig = {
     app: "ZXiter Trick",
+    engine: "Unity",
     gameplay: {
-      precision: s.dynamicPrecision || false,
-      stability: s.weaponStability || false,
-      recoil: s.recoilControl || false,
       aimAssist: buildAimAssist(s),
+      precision: s.dynamicPrecision,
+      stability: s.weaponStability,
+      recoil: s.recoilControl,
       sensitivity: s.sensitivity
     },
-    performance: {
-      antilag: s.antilag,
-      pingBoost: s.pingBoost,
-      fpsBoost: s.fpsBoost,
-      reduceDelay: s.reduceDelay,
-      lowLatency: s.lowLatency
-    },
     system: {
-      advancedSync: s.advancedSync,
-      smartCache: s.smartCache,
-      processPriority: s.processPriority,
-      debugMode: s.debugMode
-    },
-    timestamp: Date.now()
+      antilag: s.antilag,
+      fpsBoost: s.fpsBoost,
+      pingBoost: s.pingBoost,
+      lowLatency: s.lowLatency
+    }
   };
 
   localStorage.setItem("zxiter_config", JSON.stringify(finalConfig));
-  alert("Configuração aplicada e salva.");
+  Unity.call(JSON.stringify(finalConfig));
+  alert("Configurações aplicadas com sucesso.");
 });
 
 // =========================
-// EXPORTAR CONFIG (JSON)
-// =========================
-document.getElementById("export").addEventListener("click", () => {
-  const cfg = localStorage.getItem("zxiter_config");
-  if (!cfg) return alert("Nenhuma configuração salva.");
-
-  const blob = new Blob([cfg], { type: "application/json" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "zxiter_config.json";
-  a.click();
-  URL.revokeObjectURL(a.href);
-});
-
-// =========================
-// DOWNLOAD ZIP (DATA + 20 FILES)
-// REQUER JSZIP NO HTML
+// DOWNLOAD CONNECT (ZIP)
 // =========================
 document.getElementById("downloadData").addEventListener("click", async () => {
-  if (typeof JSZip === "undefined") {
-    alert("JSZip não carregado");
-    return;
-  }
-
   const zip = new JSZip();
-  const folder = zip.folder("data");
-
-  const sensitivity = {
-    x: Number(document.getElementById("sensX").value),
-    y: Number(document.getElementById("sensY").value),
-    z: Number(document.getElementById("sensZ").value)
-  };
+  const folder = zip.folder("files/data");
 
   for (let i = 1; i <= 20; i++) {
     folder.file(
-      `connection_${i}.json`,
+      `connect_${i}.json`,
       JSON.stringify({
         id: i,
-        type: "game_connection",
-        sensitivity,
-        createdAt: Date.now()
+        type: "unity-connect",
+        path: "files/data",
+        createdAt: new Date().toISOString()
       }, null, 2)
     );
   }
 
   const blob = await zip.generateAsync({ type: "blob" });
+  const url = URL.createObjectURL(blob);
+
   const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "data_connections.zip";
+  a.href = url;
+  a.download = "connect_files_data.zip";
   a.click();
-  URL.revokeObjectURL(a.href);
+
+  URL.revokeObjectURL(url);
 });
 
 // =========================
-// RESETAR PAINEL
+// EXPORTAR CONFIG
+// =========================
+document.getElementById("export").addEventListener("click", () => {
+  const data = localStorage.getItem("zxiter_config");
+  if (!data) return alert("Nenhuma config salva.");
+
+  const blob = new Blob([data], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "zxiter_config.json";
+  a.click();
+
+  URL.revokeObjectURL(url);
+});
+
+// =========================
+// RESET
 // =========================
 document.getElementById("reset").addEventListener("click", () => {
-  document.querySelectorAll("input").forEach(el => {
-    if (el.type === "checkbox") el.checked = false;
-    if (el.type === "number") el.value = 50;
-  });
-
-  document.getElementById("target").value = "head";
   localStorage.removeItem("zxiter_config");
+  document.querySelectorAll("input").forEach(i => {
+    if (i.type === "checkbox") i.checked = false;
+    if (i.type === "number") i.value = 50;
+  });
+  document.getElementById("target").value = "head";
   alert("Painel resetado.");
 });
 
 // =========================
-// LOAD CONFIGURAÇÃO SALVA
+// LOAD AUTOMÁTICO
 // =========================
 window.addEventListener("load", () => {
   const saved = localStorage.getItem("zxiter_config");
   if (!saved) return;
 
   const cfg = JSON.parse(saved);
+  const g = cfg.gameplay || {};
 
-  document.querySelectorAll("input[type=checkbox]").forEach(cb => {
-    const key = cb.dataset.key;
-    cb.checked = !!cfg.performance?.[key] || !!cfg.system?.[key] || false;
-  });
-
-  if (cfg.gameplay?.aimAssist?.priority) {
-    document.getElementById("target").value = cfg.gameplay.aimAssist.priority;
-  }
-
-  if (cfg.gameplay?.sensitivity) {
-    document.getElementById("sensX").value = cfg.gameplay.sensitivity.x;
-    document.getElementById("sensY").value = cfg.gameplay.sensitivity.y;
-    document.getElementById("sensZ").value = cfg.gameplay.sensitivity.z;
-  }
-});
-// =========================
-// DOWNLOAD CONNECT (FILES/DATA)
-// =========================
-document.getElementById("downloadData").addEventListener("click", () => {
-  const files = [];
-  
-  for (let i = 1; i <= 20; i++) {
-    files.push(
-      `connect_${i}.json:\n` +
-      JSON.stringify({
-        id: i,
-        type: "external-connect",
-        path: "files/data",
-        timestamp: Date.now()
-      }, null, 2)
-    );
-  }
-
-  const blob = new Blob([files.join("\n\n")], { type: "text/plain" });
-  const url = URL.createObjectURL(blob);
-
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "connect_files_data.txt";
-  a.click();
-
-  URL.revokeObjectURL(url);
+  document.getElementById("sensX").value = g.sensitivity?.x ?? 50;
+  document.getElementById("sensY").value = g.sensitivity?.y ?? 50;
+  document.getElementById("sensZ").value = g.sensitivity?.z ?? 50;
 });
