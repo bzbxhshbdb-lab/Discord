@@ -1,6 +1,8 @@
-// sw.js
-const CACHE_NAME = "zxiter-cache-v1";
+// sw.js — FIX DEFINITIVO
+const CACHE_NAME = "zxiter-cache-v6"; // MUDE A VERSÃO SEMPRE QUE ATUALIZAR
+
 const FILES_TO_CACHE = [
+  "./",
   "./index.html",
   "./style.css",
   "./script.js",
@@ -9,17 +11,42 @@ const FILES_TO_CACHE = [
   "./icon-512.png"
 ];
 
+// INSTALL
 self.addEventListener("install", event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(FILES_TO_CACHE))
+    caches.open(CACHE_NAME).then(cache => {
+      return cache.addAll(FILES_TO_CACHE);
+    })
   );
   self.skipWaiting();
 });
 
+// ACTIVATE — LIMPA CACHE ANTIGO
 self.addEventListener("activate", event => {
-  event.waitUntil(clients.claim());
+  event.waitUntil(
+    caches.keys().then(keys => {
+      return Promise.all(
+        keys.map(key => {
+          if (key !== CACHE_NAME) {
+            return caches.delete(key);
+          }
+        })
+      );
+    })
+  );
+  self.clients.claim();
 });
 
+// FETCH — SEMPRE BUSCA JS NOVO
 self.addEventListener("fetch", event => {
-  event.respondWith(caches.match(event.request).then(res => res || fetch(event.request)));
+  if (event.request.destination === "script") {
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  event.respondWith(
+    caches.match(event.request).then(res => res || fetch(event.request))
+  );
 });
