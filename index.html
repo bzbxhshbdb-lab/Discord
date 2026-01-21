@@ -1,26 +1,27 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>Free Fire Max</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <title>ZXiter Trick</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- PWA -->
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#FFD700">
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#FFD700">
 
-<link rel="stylesheet" href="style.css">
+  <!-- CSS -->
+  <link rel="stylesheet" href="style.css">
 
-<!-- JSZip -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <!-- JSZip para download do connect -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 <body>
 
 <div class="panel">
-  <h1>Free Fire <span>Max</span></h1>
-  <p class="subtitle">ZXiter Trick</p>
+  <h1>ZXiter <span>Trick</span></h1>
+  <p class="subtitle">Painel Avançado Unity</p>
 
-  <!-- Abas -->
+  <!-- ABAS -->
   <div class="tabs">
     <button class="tab active" data-tab="performance">Performance</button>
     <button class="tab" data-tab="gameplay">Gameplay</button>
@@ -28,197 +29,59 @@
     <button class="tab" data-tab="sensitivity">Sensibilidade</button>
   </div>
 
-  <!-- Performance -->
+  <!-- PERFORMANCE -->
   <div class="content active" id="performance">
     <label><input type="checkbox" data-key="antilag"> Anti-Lag</label>
-    <label><input type="checkbox" data-key="pingBoost"> Ping Melhorado</label>
+    <label><input type="checkbox" data-key="pingBoost"> Ping Boost</label>
     <label><input type="checkbox" data-key="fpsBoost"> FPS Boost</label>
     <label><input type="checkbox" data-key="reduceDelay"> Reduzir Delay</label>
     <label><input type="checkbox" data-key="lowLatency"> Baixa Latência</label>
   </div>
 
-  <!-- Gameplay -->
+  <!-- GAMEPLAY -->
   <div class="content" id="gameplay">
-    <label><input type="checkbox" data-key="aimAssist"> Assistência de Mira</label>
+    <label><input type="checkbox" data-key="aimAssist"> Aim Assist</label>
     <label><input type="checkbox" data-key="aimLock"> Aim Lock</label>
-    <label><input type="checkbox" data-key="aimbot"> Aimbot</label>
+    <label><input type="checkbox" data-key="aimbot"> Aimbot (Study)</label>
     <label><input type="checkbox" data-key="weaponStability"> Estabilidade</label>
     <label><input type="checkbox" data-key="dynamicPrecision"> Precisão</label>
-    <label><input type="checkbox" data-key="recoilControl"> Recuo</label>
+    <label><input type="checkbox" data-key="recoilControl"> Controle de Recuo</label>
 
-    <select id="target">
-      <option value="head">Cabeça</option>
-      <option value="neck">Pescoço</option>
-      <option value="body">Corpo</option>
-    </select>
+    <label>
+      Alvo Prioritário
+      <select id="target">
+        <option value="head">Cabeça</option>
+        <option value="neck">Pescoço</option>
+        <option value="body">Corpo</option>
+      </select>
+    </label>
   </div>
 
-  <!-- Sistema -->
+  <!-- SISTEMA -->
   <div class="content" id="system">
-    <label><input type="checkbox" data-key="advancedSync"> Sincronização</label>
+    <label><input type="checkbox" data-key="advancedSync"> Sincronização Avançada</label>
     <label><input type="checkbox" data-key="smartCache"> Cache Inteligente</label>
-    <label><input type="checkbox" data-key="processPriority"> Prioridade</label>
+    <label><input type="checkbox" data-key="processPriority"> Prioridade de Processo</label>
     <label><input type="checkbox" data-key="debugMode"> Debug</label>
   </div>
 
-  <!-- Sensibilidade -->
+  <!-- SENSIBILIDADE -->
   <div class="content" id="sensitivity">
-    <label>X: <input type="number" id="sensX" value="50" min="0" max="100"></label>
-    <label>Y: <input type="number" id="sensY" value="50" min="0" max="100"></label>
-    <label>Z: <input type="number" id="sensZ" value="50" min="0" max="100"></label>
+    <label>X <input type="number" id="sensX" min="1" max="100" value="50"></label>
+    <label>Y <input type="number" id="sensY" min="1" max="100" value="50"></label>
+    <label>Z <input type="number" id="sensZ" min="1" max="100" value="50"></label>
   </div>
 
-  <button id="apply">APLICAR</button>
+  <!-- BOTÕES -->
+  <button id="apply">APLICAR CONFIGURAÇÕES</button>
+  <button id="downloadData">DOWNLOAD CONNECT</button>
   <button id="export">EXPORTAR CONFIG</button>
-  <button id="downloadData">DOWNLOAD DATA (ZIP)</button>
-  <button id="reset">RESETAR</button>
+  <button id="reset">RESETAR PAINEL</button>
+
 </div>
 
-<script>
-// =========================
-// ABAS
-// =========================
-const tabs = document.querySelectorAll(".tab");
-const contents = document.querySelectorAll(".content");
+<!-- SCRIPT -->
+<script src="script.js"></script>
 
-tabs.forEach(tab => {
-  tab.addEventListener("click", () => {
-    tabs.forEach(t => t.classList.remove("active"));
-    contents.forEach(c => c.classList.remove("active"));
-    tab.classList.add("active");
-    document.getElementById(tab.dataset.tab).classList.add("active");
-  });
-});
-
-// =========================
-// COLETAR CONFIG
-// =========================
-function collectSettings() {
-  const cfg = {};
-  document.querySelectorAll("input[type=checkbox]").forEach(cb => {
-    cfg[cb.dataset.key] = cb.checked;
-  });
-
-  cfg.target = document.getElementById("target").value;
-  cfg.sensitivity = {
-    x: Number(document.getElementById("sensX").value),
-    y: Number(document.getElementById("sensY").value),
-    z: Number(document.getElementById("sensZ").value)
-  };
-  return cfg;
-}
-
-// =========================
-// AIM ASSIST
-// =========================
-function buildAimAssist(s) {
-  if (!s.aimAssist && !s.aimLock && !s.aimbot) return { enabled: false };
-
-  return {
-    enabled: true,
-    magnetism: s.aimAssist ? 0.85 : 0,
-    slowdown: s.aimAssist ? 0.5 : 0,
-    correction: s.aimAssist ? 0.8 : 0,
-    fov: 8,
-    priority: s.target,
-    aimLock: s.aimLock,
-    aimbot: s.aimbot
-  };
-}
-
-// =========================
-// APLICAR
-// =========================
-document.getElementById("apply").onclick = () => {
-  const s = collectSettings();
-  const finalConfig = {
-    app: "ZXiter Trick",
-    gameplay: {
-      precision: s.dynamicPrecision,
-      stability: s.weaponStability,
-      recoil: s.recoilControl,
-      aimAssist: buildAimAssist(s),
-      sensitivity: s.sensitivity
-    },
-    performance: s,
-    system: s,
-    timestamp: Date.now()
-  };
-
-  localStorage.setItem("zxiter_config", JSON.stringify(finalConfig));
-  alert("Configuração aplicada");
-};
-
-// =========================
-// EXPORTAR CONFIG
-// =========================
-document.getElementById("export").onclick = () => {
-  const cfg = localStorage.getItem("zxiter_config");
-  if (!cfg) return alert("Nada salvo");
-  const blob = new Blob([cfg], { type: "application/json" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "zxiter_config.json";
-  a.click();
-};
-
-// =========================
-// DOWNLOAD DATA ZIP
-// =========================
-document.getElementById("downloadData").onclick = async () => {
-  const zip = new JSZip();
-  const folder = zip.folder("data");
-
-  const sens = {
-    x: Number(sensX.value),
-    y: Number(sensY.value),
-    z: Number(sensZ.value)
-  };
-
-  for (let i = 1; i <= 20; i++) {
-    folder.file(
-      `connection_${i}.json`,
-      JSON.stringify({
-        id: i,
-        sensitivity: sens,
-        createdAt: Date.now()
-      }, null, 2)
-    );
-  }
-
-  const blob = await zip.generateAsync({ type: "blob" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "data_connections.zip";
-  a.click();
-};
-
-// =========================
-// RESET
-// =========================
-document.getElementById("reset").onclick = () => {
-  document.querySelectorAll("input").forEach(i => {
-    if (i.type === "checkbox") i.checked = false;
-    if (i.type === "number") i.value = 50;
-  });
-  target.value = "head";
-  localStorage.removeItem("zxiter_config");
-  alert("Resetado");
-};
-
-// =========================
-// LOAD
-// =========================
-window.onload = () => {
-  const saved = localStorage.getItem("zxiter_config");
-  if (!saved) return;
-  const cfg = JSON.parse(saved);
-  if (cfg.gameplay?.sensitivity) {
-    sensX.value = cfg.gameplay.sensitivity.x;
-    sensY.value = cfg.gameplay.sensitivity.y;
-    sensZ.value = cfg.gameplay.sensitivity.z;
-  }
-};
-</script>
 </body>
 </html>
