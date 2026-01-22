@@ -1,5 +1,5 @@
 // sw.js — FIX DEFINITIVO
-const CACHE_NAME = "zxiter-cache-v6"; // MUDE A VERSÃO SEMPRE QUE ATUALIZAR
+const CACHE_NAME = "zxiter-cache-v7"; // MUDE A VERSÃO SEMPRE QUE ATUALIZAR
 
 const FILES_TO_CACHE = [
   "./",
