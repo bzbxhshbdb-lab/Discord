@@ -1,69 +1,50 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <title>ZXiter Trick</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!DOCTYPE html>  <html lang="pt-BR">  
+<head>  
+  <meta charset="UTF-8">  
+  <title>ZXiter Trick</title>  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">    <!-- PWA -->    <link rel="manifest" href="manifest.json">  
+  <meta name="theme-color" content="#FFD700">    <!-- CSS -->    <link rel="stylesheet" href="style.css">    <!-- JSZip para download do connect -->    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>  </head>  
+<body>  <div class="panel">  
+  <h1>ZXiter <span>Trick</span></h1>  
+  <p class="subtitle">Painel Avançado Unity</p>    <!-- ABAS -->    <div class="tabs">  
+    <button class="tab active" data-tab="performance">Performance</button>  
+    <button class="tab" data-tab="gameplay">Gameplay</button>  
+    <button class="tab" data-tab="system">Sistema</button>  
+    <button class="tab" data-tab="sensitivity">Sensibilidade</button>  
+  </div>    <!-- PERFORMANCE -->    <div class="content active" id="performance">  
+    <label><input type="checkbox" data-key="antilag"> Anti-Lag</label>  
+    <label><input type="checkbox" data-key="pingBoost"> Ping Boost</label>  
+    <label><input type="checkbox" data-key="fpsBoost"> FPS Boost</label>  
+    <label><input type="checkbox" data-key="reduceDelay"> Reduzir Delay</label>  
+    <label><input type="checkbox" data-key="lowLatency"> Baixa Latência</label>  
+  </div>    <!-- GAMEPLAY -->    <div class="content" id="gameplay">  
+    <label><input type="checkbox" data-key="aimAssist"> Aim Assist</label>  
+    <label><input type="checkbox" data-key="aimLock"> Aim Lock</label>  
+    <label><input type="checkbox" data-key="aimbot"> Aimbot (Study)</label>  
+    <label><input type="checkbox" data-key="weaponStability"> Estabilidade</label>  
+    <label><input type="checkbox" data-key="dynamicPrecision"> Precisão</label>  
+    <label><input type="checkbox" data-key="recoilControl"> Controle de Recuo</label>  <label>  
+  Alvo Prioritário  
+  <select id="target">  
+    <option value="head">Cabeça</option>  
+    <option value="neck">Pescoço</option>  
+    <option value="body">Corpo</option>  
+  </select>  
+</label>
 
-  <!-- PWA -->
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#FFD700">
+  </div>    <!-- SISTEMA -->    <div class="content" id="system">  
+    <label><input type="checkbox" data-key="advancedSync"> Sincronização Avançada</label>  
+    <label><input type="checkbox" data-key="smartCache"> Cache Inteligente</label>  
+    <label><input type="checkbox" data-key="processPriority"> Prioridade de Processo</label>  
+    <label><input type="checkbox" data-key="debugMode"> Debug</label>  
+  </div>    <!-- SENSIBILIDADE -->    <div class="content" id="sensitivity">  
+    <label>X <input type="number" id="sensX" min="1" max="100" value="50"></label>  
+    <label>Y <input type="number" id="sensY" min="1" max="100" value="50"></label>  
+    <label>Z <input type="number" id="sensZ" min="1" max="100" value="50"></label>  
+  </div>    <!-- BOTÕES -->  <button id="apply">APLICAR CONFIGURAÇÕES</button>
+<button id="downloadData">DOWNLOAD CONNECT</button>
+<button id="export">EXPORTAR CONFIG</button>
+<button id="reset">RESETAR PAINEL</button>
 
-  <link rel="stylesheet" href="style.css">
-
-  <!-- JSZip -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-</head>
-<body>
-
-<div class="panel">
-  <h1>ZXiter <span>Trick</span></h1>
-  <p class="subtitle">Painel Unity</p>
-
-  <div class="tabs">
-    <button class="tab active" data-tab="performance">Performance</button>
-    <button class="tab" data-tab="gameplay">Gameplay</button>
-    <button class="tab" data-tab="system">Sistema</button>
-    <button class="tab" data-tab="sensitivity">Sensibilidade</button>
-  </div>
-
-  <div class="content active" id="performance">
-    <label><input type="checkbox" data-key="antilag"> Anti-Lag</label>
-    <label><input type="checkbox" data-key="fpsBoost"> FPS Boost</label>
-    <label><input type="checkbox" data-key="lowLatency"> Baixa Latência</label>
-  </div>
-
-  <div class="content" id="gameplay">
-    <label><input type="checkbox" data-key="aimAssist"> Assistente de Mira</label>
-    <label><input type="checkbox" data-key="aimLock"> Aim Lock (Head)</label>
-    <label><input type="checkbox" data-key="aimbot"> Aimbot (Head)</label>
-    <label><input type="checkbox" data-key="recoilZero"> Recuo Zero</label>
-
-    <select id="target">
-      <option value="head">Cabeça</option>
-      <option value="neck">Pescoço</option>
-      <option value="body">Corpo</option>
-    </select>
-  </div>
-
-  <div class="content" id="system">
-    <label><input type="checkbox" data-key="debug"> Debug</label>
-    <label><input type="checkbox" data-key="sync"> Sync Engine</label>
-  </div>
-
-  <div class="content" id="sensitivity">
-    <label>X <input type="number" id="sensX" value="50"></label>
-    <label>Y <input type="number" id="sensY" value="50"></label>
-    <label>Z <input type="number" id="sensZ" value="50"></label>
-  </div>
-
-  <button id="apply">APLICAR</button>
-  <button id="downloadData">DOWNLOAD CONNECT</button>
-  <button id="export">EXPORTAR</button>
-  <button id="reset">RESETAR</button>
-</div>
-
-<!-- 🚨 AQUI ESTAVA O ERRO -->
-<script src="script.js" defer></script>
-</body>
+</div>  <!-- SCRIPT -->  <script src="script.js"></script>  </body>  
 </html>
