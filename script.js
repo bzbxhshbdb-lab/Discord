@@ -1,72 +1,130 @@
-console.log("ZXITER SCRIPT CARREGADO");
+// ========================
+// SCRIPT ZXITER – FIX FINAL
+// ========================
 
-window.addEventListener("load", () => {
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("ZXITER SCRIPT OK");
 
-  const $ = id => document.getElementById(id);
+  // ========================
+  // ABAS (FIXADAS)
+  // ========================
+  const tabs = document.querySelectorAll(".tab");
+  const contents = document.querySelectorAll(".content");
 
-  const applyBtn = $("apply");
-  const resetBtn = $("reset");
-  const exportBtn = $("export");
-  const downloadBtn = $("downloadData");
+  tabs.forEach(tab => {
+    tab.addEventListener("click", () => {
+      const targetId = tab.getAttribute("data-tab");
 
-  if (!applyBtn || !resetBtn || !exportBtn || !downloadBtn) {
-    alert("❌ ERRO: Botões não encontrados no DOM");
-    return;
-  }
+      // remove estados
+      tabs.forEach(t => t.classList.remove("active"));
+      contents.forEach(c => c.classList.remove("active"));
 
-  function collectConfig() {
-    const checks = {};
-    document.querySelectorAll("input[type=checkbox]").forEach(c => {
-      checks[c.dataset.key] = c.checked;
+      // ativa aba
+      tab.classList.add("active");
+
+      const targetContent = document.getElementById(targetId);
+      if (targetContent) {
+        targetContent.classList.add("active");
+      } else {
+        console.error("ABA NÃO ENCONTRADA:", targetId);
+      }
     });
+  });
 
-    return {
-      checks,
-      sensitivity: {
-        x: Number($("sensX").value),
-        y: Number($("sensY").value),
-        z: Number($("sensZ").value)
-      },
-      target: $("target").value
-    };
-  }
-
-  applyBtn.onclick = () => {
-    localStorage.setItem("zxiter_config", JSON.stringify(collectConfig()));
+  // ========================
+  // APLICAR
+  // ========================
+  document.getElementById("apply").onclick = () => {
+    saveConfig();
     alert("✅ Configurações aplicadas");
   };
 
-  resetBtn.onclick = () => {
+  // ========================
+  // RESET
+  // ========================
+  document.getElementById("reset").onclick = () => {
     document.querySelectorAll("input[type=checkbox]").forEach(c => c.checked = false);
-    $("sensX").value = 50;
-    $("sensY").value = 50;
-    $("sensZ").value = 50;
-    $("target").value = "head";
+    document.querySelectorAll("input[type=number]").forEach(n => n.value = 50);
+    document.getElementById("target").value = "head";
     localStorage.removeItem("zxiter_config");
-    alert("♻️ Resetado");
+    alert("♻️ Painel resetado");
   };
 
-  exportBtn.onclick = () => {
-    const blob = new Blob(
-      [JSON.stringify(collectConfig(), null, 2)],
-      { type: "application/json" }
-    );
+  // ========================
+  // EXPORTAR
+  // ========================
+  document.getElementById("export").onclick = () => {
+    const config = collectConfig();
+    const blob = new Blob([JSON.stringify(config, null, 2)], {
+      type: "application/json"
+    });
+
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = "zxiter-config.json";
     a.click();
   };
 
-  downloadBtn.onclick = async () => {
+  // ========================
+  // DOWNLOAD CONNECT
+  // ========================
+  document.getElementById("downloadData").onclick = async () => {
+    if (typeof JSZip === "undefined") {
+      alert("❌ JSZip não carregou");
+      return;
+    }
+
     const zip = new JSZip();
-    zip.file("config.json", JSON.stringify(collectConfig(), null, 2));
-    zip.file("readme.txt", "ZXiter Connect");
+    zip.file("connect/readme.txt", "ZXiter Connect ativo");
+    zip.file("connect/config.json", JSON.stringify(collectConfig(), null, 2));
 
     const content = await zip.generateAsync({ type: "blob" });
+
     const a = document.createElement("a");
     a.href = URL.createObjectURL(content);
     a.download = "ZXiter-Connect.zip";
     a.click();
   };
 
+  // ========================
+  // LOAD CONFIG
+  // ========================
+  const saved = localStorage.getItem("zxiter_config");
+  if (saved) applySavedConfig(JSON.parse(saved));
 });
+
+// ========================
+// FUNÇÕES
+// ========================
+function collectConfig() {
+  const config = {
+    checks: {},
+    sensitivity: {
+      x: Number(document.getElementById("sensX").value),
+      y: Number(document.getElementById("sensY").value),
+      z: Number(document.getElementById("sensZ").value)
+    },
+    target: document.getElementById("target").value
+  };
+
+  document.querySelectorAll("input[type=checkbox]").forEach(c => {
+    config.checks[c.dataset.key] = c.checked;
+  });
+
+  return config;
+}
+
+function saveConfig() {
+  localStorage.setItem("zxiter_config", JSON.stringify(collectConfig()));
+}
+
+function applySavedConfig(cfg) {
+  document.querySelectorAll("input[type=checkbox]").forEach(c => {
+    c.checked = !!cfg.checks[c.dataset.key];
+  });
+
+  document.getElementById("sensX").value = cfg.sensitivity.x;
+  document.getElementById("sensY").value = cfg.sensitivity.y;
+  document.getElementById("sensZ").value = cfg.sensitivity.z;
+  document.getElementById("target").value = cfg.target;
+}
