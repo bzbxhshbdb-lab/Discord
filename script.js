@@ -1,105 +1,107 @@
-// ========================
-// ABAS
-// ========================
 document.addEventListener("DOMContentLoaded", () => {
 
-  const tabs = document.querySelectorAll(".tab");
-  const contents = document.querySelectorAll(".content");
-
-  tabs.forEach(tab => {
-    tab.addEventListener("click", () => {
-      tabs.forEach(t => t.classList.remove("active"));
-      contents.forEach(c => c.classList.remove("active"));
-
+  /* ---------- ABAS ---------- */
+  document.querySelectorAll(".tab").forEach(tab => {
+    tab.onclick = () => {
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".content").forEach(c => c.classList.remove("active"));
       tab.classList.add("active");
       document.getElementById(tab.dataset.tab).classList.add("active");
+    };
+  });
+
+  /* ---------- COLETAR CONFIG ---------- */
+  function collectConfig() {
+    const checks = {};
+    document.querySelectorAll("input[type=checkbox]").forEach(c => {
+      checks[c.dataset.key] = c.checked;
     });
-  });
 
-  // ========================
-  // APLICAR CONFIG
-  // ========================
-  document.getElementById("apply").addEventListener("click", () => {
-    const config = collectConfig();
-    localStorage.setItem("zxiter_config", JSON.stringify(config));
-    alert("✅ Configurações aplicadas!");
-  });
+    return {
+      version: "1.0",
+      aim: {
+        mode: "HEAD_ONLY",
+        aimbot: checks.aimbot,
+        aimLock: checks.aimLock,
+        assist: checks.aimAssist,
+        headWeight: 1.0,
+        smoothing: 0.95,
+        snap: true
+      },
+      recoil: {
+        enabled: checks.recoilZero,
+        strength: 0.0
+      },
+      sensitivity: {
+        x: Number(sensX.value),
+        y: Number(sensY.value),
+        z: Number(sensZ.value)
+      },
+      system: {
+        fpsBoost: checks.fpsBoost,
+        antilag: checks.antilag,
+        lowLatency: checks.lowLatency,
+        debug: checks.debug
+      },
+      target: target.value
+    };
+  }
 
-  // ========================
-  // RESET
-  // ========================
-  document.getElementById("reset").addEventListener("click", () => {
-    document.querySelectorAll("input[type=checkbox]").forEach(c => c.checked = false);
-    document.querySelectorAll("input[type=number]").forEach(n => n.value = 50);
-    document.getElementById("target").value = "head";
+  /* ---------- APPLY ---------- */
+  apply.onclick = () => {
+    const cfg = collectConfig();
+    localStorage.setItem("zxiter_config", JSON.stringify(cfg));
+    alert("✅ Config aplicada");
+  };
+
+  /* ---------- RESET ---------- */
+  reset.onclick = () => {
+    document.querySelectorAll("input").forEach(i => {
+      if (i.type === "checkbox") i.checked = false;
+      if (i.type === "number") i.value = 50;
+    });
+    target.value = "head";
     localStorage.removeItem("zxiter_config");
-    alert("♻️ Painel resetado!");
-  });
+    alert("♻️ Resetado");
+  };
 
-  // ========================
-  // EXPORTAR CONFIG
-  // ========================
-  document.getElementById("export").addEventListener("click", () => {
-    const config = collectConfig();
-    const blob = new Blob([JSON.stringify(config, null, 2)], { type: "application/json" });
-
+  /* ---------- EXPORT ---------- */
+  export.onclick = () => {
+    const blob = new Blob(
+      [JSON.stringify(collectConfig(), null, 2)],
+      { type: "application/json" }
+    );
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = "zxiter-config.json";
     a.click();
-  });
-
-  // ========================
-  // DOWNLOAD CONNECT
-  // ========================
-  document.getElementById("downloadData").addEventListener("click", async () => {
-    const zip = new JSZip();
-
-    zip.file("connect/readme.txt", "ZXiter Connect - Jogo Próprio Unity");
-    zip.file("connect/config.json", JSON.stringify(collectConfig(), null, 2));
-
-    const content = await zip.generateAsync({ type: "blob" });
-
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(content);
-    a.download = "ZXiter-Connect.zip";
-    a.click();
-  });
-
-  // ========================
-  // LOAD CONFIG
-  // ========================
-  const saved = localStorage.getItem("zxiter_config");
-  if (saved) applySavedConfig(JSON.parse(saved));
-});
-
-// ========================
-// FUNÇÕES
-// ========================
-function collectConfig() {
-  const config = { checks: {}, sensitivity: {}, target: "" };
-
-  document.querySelectorAll("input[type=checkbox]").forEach(c => {
-    config.checks[c.dataset.key] = c.checked;
-  });
-
-  config.sensitivity = {
-    x: Number(document.getElementById("sensX").value),
-    y: Number(document.getElementById("sensY").value),
-    z: Number(document.getElementById("sensZ").value)
   };
 
-  config.target = document.getElementById("target").value;
-  return config;
-}
+  /* ---------- DOWNLOAD CONNECT ---------- */
+  downloadData.onclick = async () => {
+    const zip = new JSZip();
+    zip.file("data/connect/config.json", JSON.stringify(collectConfig(), null, 2));
+    zip.file("data/connect/readme.txt", "ZXiter Connect - Unity");
 
-function applySavedConfig(cfg) {
-  document.querySelectorAll("input[type=checkbox]").forEach(c => {
-    c.checked = !!cfg.checks[c.dataset.key];
-  });
+    const blob = await zip.generateAsync({ type: "blob" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "ZXiter-Connect.zip";
+    a.click();
+  };
 
-  document.getElementById("sensX").value = cfg.sensitivity.x;
-  document.getElementById("sensY").value = cfg.sensitivity.y;
-  document.getElementById("sensZ").value = cfg.sensitivity.z;
-  document.getElementById("target").value = cfg.target;
-}
+  /* ---------- LOAD ---------- */
+  const saved = localStorage.getItem("zxiter_config");
+  if (saved) {
+    const cfg = JSON.parse(saved);
+    Object.keys(cfg.system || {}).forEach(k => {
+      const el = document.querySelector(`[data-key="${k}"]`);
+      if (el) el.checked = cfg.system[k];
+    });
+    sensX.value = cfg.sensitivity.x;
+    sensY.value = cfg.sensitivity.y;
+    sensZ.value = cfg.sensitivity.z;
+    target.value = cfg.target;
+  }
+
+});
