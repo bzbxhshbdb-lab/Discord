@@ -21,32 +21,17 @@ self.addEventListener("install", event => {
   self.skipWaiting();
 });
 
-// ACTIVATE — LIMPA CACHE ANTIGO
 self.addEventListener("activate", event => {
   event.waitUntil(
-    caches.keys().then(keys => {
-      return Promise.all(
+    caches.keys().then(keys =>
+      Promise.all(
         keys.map(key => {
           if (key !== CACHE_NAME) {
             return caches.delete(key);
           }
         })
-      );
-    })
+      )
+    )
   );
   self.clients.claim();
-});
-
-// FETCH — SEMPRE BUSCA JS NOVO
-self.addEventListener("fetch", event => {
-  if (event.request.destination === "script") {
-    event.respondWith(
-      fetch(event.request).catch(() => caches.match(event.request))
-    );
-    return;
-  }
-
-  event.respondWith(
-    caches.match(event.request).then(res => res || fetch(event.request))
-  );
 });
