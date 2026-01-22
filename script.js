@@ -1,17 +1,30 @@
-document.addEventListener("DOMContentLoaded", () => {
+// ========================
+// ESTADO DO SISTEMA
+// ========================
+const Engine = {
+  aimAssist: false,
+  aimLock: false,
+  aimbot: false,
+  recoilControl: false,
+  stability: false,
+  precision: false,
+  target: "head",
+  sensitivity: { x: 50, y: 50, z: 50 },
+  power: {
+    snap: true,
+    smoothing: 0.98,
+    headBias: 1.0
+  }
+};
 
-  /* ===== REFERÊNCIAS SEGURAS ===== */
-  const btnApply = document.getElementById("apply");
-  const btnReset = document.getElementById("reset");
-  const btnExport = document.getElementById("export");
-  const btnDownload = document.getElementById("downloadData");
+document.addEventListener("DOMContentLoaded", () => {
 
   const sensX = document.getElementById("sensX");
   const sensY = document.getElementById("sensY");
   const sensZ = document.getElementById("sensZ");
   const target = document.getElementById("target");
 
-  /* ===== ABAS (AGORA NÃO QUEBRA MAIS) ===== */
+  /* ---------- ABAS ---------- */
   document.querySelectorAll(".tab").forEach(tab => {
     tab.addEventListener("click", () => {
       document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
@@ -22,87 +35,85 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  /* ===== COLETAR CONFIG ===== */
-  function collectConfig() {
-    const get = key => {
-      const el = document.querySelector(`input[data-key="${key}"]`);
-      return el ? el.checked : false;
+  /* ---------- BOTÕES ---------- */
+  document.getElementById("apply").onclick = applyConfig;
+  document.getElementById("reset").onclick = resetConfig;
+  document.getElementById("export").onclick = exportConfig;
+  document.getElementById("downloadData").onclick = downloadConnect;
+
+  // ========================
+  // APLICAR CONFIG
+  // ========================
+  function applyConfig() {
+    Engine.aimAssist = getCheck("aimAssist");
+    Engine.aimLock = getCheck("aimLock");
+    Engine.aimbot = getCheck("aimbot");
+    Engine.recoilControl = getCheck("recoilControl");
+    Engine.stability = getCheck("weaponStability");
+    Engine.precision = getCheck("dynamicPrecision");
+
+    Engine.target = target.value;
+    Engine.sensitivity = {
+      x: +sensX.value,
+      y: +sensY.value,
+      z: +sensZ.value
     };
 
-    return {
-      meta: {
-        engine: "UNITY",
-        platform: "ANDROID",
-        version: 1
-      },
-      aim: {
-        aimbot: get("aimbot"),
-        aimLock: get("aimLock"),
-        assist: get("aimAssist"),
-        target: target.value,
-        headshotForce: 1.0,
-        smoothing: 0.95,
-        snap: true
-      },
-      recoil: {
-        enabled: get("recoilZero"),
-        value: 0.0
-      },
-      sensitivity: {
-        x: Number(sensX.value),
-        y: Number(sensY.value),
-        z: Number(sensZ.value)
-      },
-      system: {
-        fpsBoost: get("fpsBoost"),
-        antilag: get("antilag"),
-        lowLatency: get("lowLatency"),
-        debug: get("debug")
-      }
-    };
+    simulateEngine();
   }
 
-  /* ===== APPLY ===== */
-  btnApply.addEventListener("click", () => {
-    window.__ZXITER_ENGINE__ = collectConfig();
-    console.log("ZXiter aplicado", window.__ZXITER_ENGINE__);
-  });
+  // ========================
+  // SIMULAÇÃO “FORTE”
+  // ========================
+  function simulateEngine() {
+    console.clear();
+    console.log("🔥 ZXiter Engine ATIVO (SIMULADO)");
+    console.table(Engine);
 
-  /* ===== RESET ===== */
-  btnReset.addEventListener("click", () => {
+    if (Engine.aimAssist) console.log(`🎯 Aim Assist FORTE | Intensidade ${Engine.sensitivity.z}`);
+    if (Engine.aimLock) console.log(`🔒 Aim Lock rígido em ${Engine.target}`);
+    if (Engine.aimbot) console.log(`🤖 Aimbot lógico | Prioridade ${Engine.target}`);
+    if (Engine.recoilControl) console.log("🧱 Recuo virtualmente zerado");
+  }
+
+  // ========================
+  // RESET
+  // ========================
+  function resetConfig() {
     document.querySelectorAll("input").forEach(i => {
       if (i.type === "checkbox") i.checked = false;
       if (i.type === "number") i.value = 50;
     });
     target.value = "head";
     console.clear();
-  });
+  }
 
-  /* ===== EXPORT ===== */
-  btnExport.addEventListener("click", () => {
+  // ========================
+  // EXPORTAR CONFIG (PARA SEU JOGO)
+  // ========================
+  function exportConfig() {
     const blob = new Blob(
-      [JSON.stringify(collectConfig(), null, 2)],
+      [JSON.stringify(Engine, null, 2)],
       { type: "application/json" }
     );
-
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "zxiter.connect.json";
+    a.download = "zxiter-engine.json";
     a.click();
-  });
+  }
 
-  /* ===== DOWNLOAD CONNECT ===== */
-  btnDownload.addEventListener("click", async () => {
+  // ========================
+  // DOWNLOAD CONNECT
+  // ========================
+  async function downloadConnect() {
     const zip = new JSZip();
-
     zip.file(
-      "Android/data/com.seujogo/files/zxiter/connect.json",
-      JSON.stringify(collectConfig(), null, 2)
+      "Android/data/seu.jogo/files/zxiter/engine.json",
+      JSON.stringify(Engine, null, 2)
     );
-
     zip.file(
-      "Android/data/com.seujogo/files/zxiter/readme.txt",
-      "Connect para leitura via persistentDataPath"
+      "Android/data/seu.jogo/files/zxiter/readme.txt",
+      "Arquivo para leitura via persistentDataPath"
     );
 
     const blob = await zip.generateAsync({ type: "blob" });
@@ -110,6 +121,14 @@ document.addEventListener("DOMContentLoaded", () => {
     a.href = URL.createObjectURL(blob);
     a.download = "ZXiter-Connect.zip";
     a.click();
-  });
+  }
+
+  // ========================
+  // HELPER
+  // ========================
+  function getCheck(key) {
+    const el = document.querySelector(`input[data-key="${key}"]`);
+    return el ? el.checked : false;
+  }
 
 });
