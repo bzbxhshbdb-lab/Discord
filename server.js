@@ -43,6 +43,7 @@ function optimizeEngine(engine) {
   return engine;
 }
 
+
 // ===== JOGO CONSULTA =====
 app.get("/engine", (req, res) => {
   if (!fs.existsSync(INPUT)) {
