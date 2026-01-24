@@ -1,15 +1,4 @@
-// ========================
-// HELPERS
-// ========================
-function getCheck(key) {
-  const el = document.querySelector(`[data-key="${key}"]`);
-  return el ? el.checked : false;
-}
 
-// Sensibilidade (refs globais)
-const sensX = document.getElementById("sensX");
-const sensY = document.getElementById("sensY");
-const sensZ = document.getElementById("sensZ");
 // ========================
 // ESTADO DO SISTEMA
 // ========================
@@ -24,10 +13,18 @@ const Engine = {
   sensitivity: { x: 50, y: 50, z: 50 }
 };
 
+let sensX, sensY, sensZ, target;
+
 // ========================
 // DOM READY
 // ========================
 document.addEventListener("DOMContentLoaded", () => {
+
+  // Inputs
+  sensX = document.getElementById("sensX");
+  sensY = document.getElementById("sensY");
+  sensZ = document.getElementById("sensZ");
+  target = document.getElementById("target");
 
   // -------- ABAS --------
   document.querySelectorAll(".tab").forEach(tab => {
@@ -38,7 +35,10 @@ document.addEventListener("DOMContentLoaded", () => {
       tab.classList.add("active");
       document.getElementById(tab.dataset.tab).classList.add("active");
     });
-  });
+  function getCheck(key) {
+  const el = document.querySelector(`[data-key="${key}"]`);
+  return el ? el.checked : false;
+  }
 
   // -------- BOTÕES --------
   document.getElementById("apply").addEventListener("click", applyConfig);
@@ -46,36 +46,25 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("export").addEventListener("click", exportConfig);
   document.getElementById("downloadData").addEventListener("click", downloadConnect);
 });
-
-// ========================
-// APLICAR CONFIG
-// ========================
 function applyConfig() {
-  try {
-    Engine.aimAssist = getCheck("aimAssist");
-    Engine.aimLock = getCheck("aimLock");
-    Engine.aimbot = getCheck("aimbot");
-    Engine.recoilControl = getCheck("recoilControl");
-    Engine.stability = getCheck("weaponStability");
-    Engine.precision = getCheck("dynamicPrecision");
+  Engine.aimAssist = getCheck("aimAssist");
+  Engine.aimLock = getCheck("aimLock");
+  Engine.aimbot = getCheck("aimbot");
+  Engine.recoilControl = getCheck("recoilControl");
+  Engine.stability = getCheck("weaponStability");
+  Engine.precision = getCheck("dynamicPrecision");
 
-    Engine.target = document.getElementById("target").value;
+  Engine.target = target.value;
 
-    Engine.sensitivity.x = Number(sensX.value);
-    Engine.sensitivity.y = Number(sensY.value);
-    Engine.sensitivity.z = Number(sensZ.value);
+  Engine.sensitivity.x = Number(sensX.value);
+  Engine.sensitivity.y = Number(sensY.value);
+  Engine.sensitivity.z = Number(sensZ.value);
 
-    updateMeters(); // 🔥 AGORA OS MEDIDORES FUNCIONAM
+  updateMeters();
 
-    console.clear();
-    console.log("🔥 ZXiter Engine Ativo");
-    console.table(Engine);
-
-    alert("✅ Configurações aplicadas");
-  } catch (e) {
-    console.error("❌ Erro no Apply:", e);
-    alert("Erro ao aplicar config (veja o console)");
-  }
+  console.clear();
+  console.table(Engine);
+  alert("✅ Configurações aplicadas");
 }
 // ========================
 // RESET
@@ -146,43 +135,11 @@ function updateMeters() {
      Engine.sensitivity.z) / 3
   );
 
-  // ===== ATUALIZAR UI =====
-  setMeter("hsMeter", "hsValue", hs);
-  setMeter("optMeter", "optValue", opt);
-  setMeter("sensMeter", "sensValue", sens);
-}
-function setMeter(barId, textId, value) {
-  const bar = document.getElementById(barId);
-  const text = document.getElementById(textId);
-
-  bar.style.width = value + "%";
-  text.innerText = value + "%";
-
-  bar.classList.remove("low", "mid", "high");
-  if (value < 40) bar.classList.add("low");
-  else if (value < 75) bar.classList.add("mid");
-  else bar.classList.add("high");
-}
-function preset(mode) {
+  function preset(mode) {
   const map = {
-    safe: {
-      aimAssist: true,
-      aimLock: false,
-      aimbot: false,
-      sens: 45
-    },
-    pro: {
-      aimAssist: true,
-      aimLock: true,
-      aimbot: false,
-      sens: 65
-    },
-    insane: {
-      aimAssist: true,
-      aimLock: true,
-      aimbot: true,
-      sens: 90
-    }
+    safe: { aimAssist: true, aimLock: false, aimbot: false, sens: 45 },
+    pro: { aimAssist: true, aimLock: true, aimbot: false, sens: 65 },
+    insane: { aimAssist: true, aimLock: true, aimbot: true, sens: 90 }
   };
 
   const p = map[mode];
@@ -195,4 +152,4 @@ function preset(mode) {
   target.value = "head";
 
   applyConfig();
-}
+  }
