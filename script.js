@@ -1,4 +1,3 @@
-
 // ========================
 // ESTADO DO SISTEMA
 // ========================
@@ -20,7 +19,6 @@ let sensX, sensY, sensZ, target;
 // ========================
 document.addEventListener("DOMContentLoaded", () => {
 
-  // Inputs
   sensX = document.getElementById("sensX");
   sensY = document.getElementById("sensY");
   sensZ = document.getElementById("sensZ");
@@ -35,10 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
       tab.classList.add("active");
       document.getElementById(tab.dataset.tab).classList.add("active");
     });
-  function getCheck(key) {
-  const el = document.querySelector(`[data-key="${key}"]`);
-  return el ? el.checked : false;
-  }
+  });
 
   // -------- BOTÕES --------
   document.getElementById("apply").addEventListener("click", applyConfig);
@@ -46,6 +41,18 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("export").addEventListener("click", exportConfig);
   document.getElementById("downloadData").addEventListener("click", downloadConnect);
 });
+
+// ========================
+// HELPERS
+// ========================
+function getCheck(key) {
+  const el = document.querySelector(`[data-key="${key}"]`);
+  return el ? el.checked : false;
+}
+
+// ========================
+// APPLY
+// ========================
 function applyConfig() {
   Engine.aimAssist = getCheck("aimAssist");
   Engine.aimLock = getCheck("aimLock");
@@ -61,18 +68,19 @@ function applyConfig() {
   Engine.sensitivity.z = Number(sensZ.value);
 
   updateMeters();
-
   console.clear();
   console.table(Engine);
+
   alert("✅ Configurações aplicadas");
 }
+
 // ========================
 // RESET
 // ========================
 function resetConfig() {
   document.querySelectorAll("input[type=checkbox]").forEach(c => c.checked = false);
   document.querySelectorAll("input[type=number]").forEach(n => n.value = 50);
-  document.getElementById("target").value = "head";
+  target.value = "head";
 
   console.clear();
   alert("♻️ Painel resetado");
@@ -108,34 +116,26 @@ async function downloadConnect() {
   a.click();
 }
 
+// ========================
+// METERS
+// ========================
 function updateMeters() {
   let hs = 0;
-  let opt = 0;
-  let sens = 0;
 
-  // ===== HS =====
   if (Engine.aimbot) hs += 40;
   if (Engine.aimLock) hs += 30;
   if (Engine.aimAssist) hs += 20;
   if (Engine.target === "head") hs += 10;
+
   hs = Math.min(hs, 100);
 
-  // ===== OTIMIZAÇÃO =====
-  if (getCheck("fpsBoost")) opt += 25;
-  if (getCheck("antilag")) opt += 20;
-  if (getCheck("lowLatency")) opt += 20;
-  if (getCheck("reduceDelay")) opt += 20;
-  if (getCheck("pingBoost")) opt += 15;
-  opt = Math.min(opt, 100);
+  document.getElementById("hsMeter").style.width = hs + "%";
+}
 
-  // ===== SENSIBILIDADE =====
-  sens = Math.round(
-    (Engine.sensitivity.x +
-     Engine.sensitivity.y +
-     Engine.sensitivity.z) / 3
-  );
-
-  function preset(mode) {
+// ========================
+// PRESETS
+// ========================
+function preset(mode) {
   const map = {
     safe: { aimAssist: true, aimLock: false, aimbot: false, sens: 45 },
     pro: { aimAssist: true, aimLock: true, aimbot: false, sens: 65 },
@@ -143,6 +143,7 @@ function updateMeters() {
   };
 
   const p = map[mode];
+  if (!p) return;
 
   document.querySelector('[data-key="aimAssist"]').checked = p.aimAssist;
   document.querySelector('[data-key="aimLock"]').checked = p.aimLock;
@@ -152,39 +153,64 @@ function updateMeters() {
   target.value = "head";
 
   applyConfig();
-  }
+}
+// ========================
+// MOTOR DE COMBATE
+// ========================
+
+// ===== TARGET =====
+function getTargetPoint(enemy) {
+  if (!enemy) return null;
+
+  if (Engine.target === "head" && enemy.bones?.head) return enemy.bones.head;
+  if (Engine.target === "neck" && enemy.bones?.neck) return enemy.bones.neck;
+
+  return enemy.center;
+}
+
+// ===== AIM ASSIST =====
+function runAimAssist(player, enemy) {
+  if (!Engine.aimAssist || !enemy) return;
+
+  const target = getTargetPoint(enemy);
+  if (!target) return;
+
+  const assist = Engine.stability ? 0.35 : 0.25;
+
+  player.aim.x += (target.x - player.aim.x) * assist;
+  player.aim.y += (target.y - player.aim.y) * assist;
+}
+
+// ===== AIMBOT =====
 function runAimbot(player, enemy) {
   if (!Engine.aimbot || !enemy) return;
 
-  const targetPos = getTargetPoint(enemy);
-  const delta = {
-    x: targetPos.x - player.aim.x,
-    y: targetPos.y - player.aim.y
-  };
+  const target = getTargetPoint(enemy);
+  if (!target) return;
 
-  const strength = Engine.precision ? 1.0 : 0.85;
+  const dx = target.x - player.aim.x;
+  const dy = target.y - player.aim.y;
 
-  player.aim.x += delta.x * strength;
-  player.aim.y += delta.y * strength;
+  const strength = Engine.precision ? 1.0 : 0.9;
+
+  player.aim.x += dx * strength;
+  player.aim.y += dy * strength;
 }
-  function runAimAssist(player, enemy) {
-  if (!Engine.aimAssist || !enemy) return;
 
-  const targetPos = getTargetPoint(enemy);
-  const assist = 0.15 + (Engine.stability ? 0.1 : 0);
-
-  player.aim.x += (targetPos.x - player.aim.x) * assist;
-  player.aim.y += (targetPos.y - player.aim.y) * assist;
-  }
-  function runAimLock(player, enemy) {
+// ===== AIM LOCK =====
+function runAimLock(player, enemy) {
   if (!Engine.aimLock || !enemy) return;
 
-  const lockPoint = getTargetPoint(enemy);
-  player.aim.x = lockPoint.x;
-  player.aim.y = lockPoint.y;
-  }
-  function applyRecoilControl(weapon) {
-  if (!Engine.recoilControl) return;
+  const target = getTargetPoint(enemy);
+  if (!target) return;
+
+  player.aim.x = target.x;
+  player.aim.y = target.y;
+}
+
+// ===== CONTROLE DE RECUO =====
+function applyRecoilControl(weapon) {
+  if (!Engine.recoilControl || !weapon) return;
 
   weapon.recoil.x *= 0.05;
   weapon.recoil.y *= 0.05;
@@ -192,30 +218,31 @@ function runAimbot(player, enemy) {
   if (Engine.precision) {
     weapon.spread = 0;
   }
-  }
-  function applyStability(player) {
+}
+
+// ===== ESTABILIDADE =====
+function applyStability(player) {
   if (!Engine.stability) return;
 
   player.shake *= 0.1;
   player.sway  *= 0.1;
-  }
-  function applyPrecision(player) {
+}
+
+// ===== PRECISÃO / FULL HS =====
+function applyPrecision(player) {
   if (!Engine.precision) return;
 
   player.errorMargin = 0;
 
   if (Engine.target === "head") {
-    player.hitZoneMultiplier = 1.5;
+    player.hitZoneMultiplier = 1.6; // HS quase garantido
   } else if (Engine.target === "neck") {
-    player.hitZoneMultiplier = 1.3;
+    player.hitZoneMultiplier = 1.4;
   }
-    }
-  function getTargetPoint(enemy) {
-  if (Engine.target === "head") return enemy.bones.head;
-  if (Engine.target === "neck") return enemy.bones.neck;
-  return enemy.center;
-  }
-  function gameTick(player, enemy, weapon) {
+}
+
+// ===== GAME LOOP =====
+function gameTick(player, enemy, weapon) {
   runAimAssist(player, enemy);
   runAimbot(player, enemy);
   runAimLock(player, enemy);
@@ -223,4 +250,4 @@ function runAimbot(player, enemy) {
   applyRecoilControl(weapon);
   applyStability(player);
   applyPrecision(player);
-  }
+}
