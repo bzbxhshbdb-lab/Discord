@@ -61,8 +61,6 @@ function applyConfig() {
   if (Engine.aimbot) console.log(`🤖 Aimbot ativo (${Engine.target})`);
   if (Engine.recoilControl) console.log("🧱 Recuo zerado");
 
-  updateMeters();
-
   alert("✅ Configurações aplicadas");
 }
 
