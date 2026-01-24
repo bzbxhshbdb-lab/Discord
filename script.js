@@ -108,13 +108,6 @@ async function downloadConnect() {
   a.click();
 }
 
-// ========================
-// HELPER
-// ========================
-function getCheck(key) {
-  const el = document.querySelector(`input[data-key="${key}"]`);
-  return el ? el.checked : false;
-}
 function updateMeters() {
   let hs = 0;
   let opt = 0;
@@ -125,14 +118,15 @@ function updateMeters() {
   if (Engine.aimLock) hs += 30;
   if (Engine.aimAssist) hs += 20;
   if (Engine.target === "head") hs += 10;
-  if (hs > 100) hs = 100;
+  hs = Math.min(hs, 100);
 
   // ===== OTIMIZAÇÃO =====
-  if (getCheck("fpsBoost")) opt += 30;
-  if (getCheck("antilag")) opt += 25;
-  if (getCheck("lowLatency")) opt += 25;
+  if (getCheck("fpsBoost")) opt += 25;
+  if (getCheck("antilag")) opt += 20;
+  if (getCheck("lowLatency")) opt += 20;
   if (getCheck("reduceDelay")) opt += 20;
-  if (opt > 100) opt = 100;
+  if (getCheck("pingBoost")) opt += 15;
+  opt = Math.min(opt, 100);
 
   // ===== SENSIBILIDADE =====
   sens = Math.round(
@@ -141,12 +135,53 @@ function updateMeters() {
      Engine.sensitivity.z) / 3
   );
 
-  // Aplicar visual
-  hsMeter.style.width = hs + "%";
-  optMeter.style.width = opt + "%";
-  sensMeter.style.width = sens + "%";
+  // ===== ATUALIZAR UI =====
+  setMeter("hsMeter", "hsValue", hs);
+  setMeter("optMeter", "optValue", opt);
+  setMeter("sensMeter", "sensValue", sens);
+}
+function setMeter(barId, textId, value) {
+  const bar = document.getElementById(barId);
+  const text = document.getElementById(textId);
 
-  hsValue.innerText = hs + "%";
-  optValue.innerText = opt + "%";
-  sensValue.innerText = sens + "%";
+  bar.style.width = value + "%";
+  text.innerText = value + "%";
+
+  bar.classList.remove("low", "mid", "high");
+  if (value < 40) bar.classList.add("low");
+  else if (value < 75) bar.classList.add("mid");
+  else bar.classList.add("high");
+}
+function preset(mode) {
+  const map = {
+    safe: {
+      aimAssist: true,
+      aimLock: false,
+      aimbot: false,
+      sens: 45
+    },
+    pro: {
+      aimAssist: true,
+      aimLock: true,
+      aimbot: false,
+      sens: 65
+    },
+    insane: {
+      aimAssist: true,
+      aimLock: true,
+      aimbot: true,
+      sens: 90
+    }
+  };
+
+  const p = map[mode];
+
+  document.querySelector('[data-key="aimAssist"]').checked = p.aimAssist;
+  document.querySelector('[data-key="aimLock"]').checked = p.aimLock;
+  document.querySelector('[data-key="aimbot"]').checked = p.aimbot;
+
+  sensX.value = sensY.value = sensZ.value = p.sens;
+  target.value = "head";
+
+  applyConfig();
 }
