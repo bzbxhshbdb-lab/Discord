@@ -9,6 +9,7 @@ const FILES_TO_CACHE = [
   "./manifest.json",
   "./icon-192.png",
   "./icon-512.png"
+  "./server.js",
 ];
 
 // INSTALL
