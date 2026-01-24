@@ -154,3 +154,100 @@ function preset(mode) {
 
   applyConfig();
 }
+// ========================
+// MOTOR DE COMBATE
+// ========================
+
+// ===== TARGET =====
+function getTargetPoint(enemy) {
+  if (!enemy) return null;
+
+  if (Engine.target === "head" && enemy.bones?.head) return enemy.bones.head;
+  if (Engine.target === "neck" && enemy.bones?.neck) return enemy.bones.neck;
+
+  return enemy.center;
+}
+
+// ===== AIM ASSIST =====
+function runAimAssist(player, enemy) {
+  if (!Engine.aimAssist || !enemy) return;
+
+  const target = getTargetPoint(enemy);
+  if (!target) return;
+
+  const assist = Engine.stability ? 0.35 : 0.25;
+
+  player.aim.x += (target.x - player.aim.x) * assist;
+  player.aim.y += (target.y - player.aim.y) * assist;
+}
+
+// ===== AIMBOT =====
+function runAimbot(player, enemy) {
+  if (!Engine.aimbot || !enemy) return;
+
+  const target = getTargetPoint(enemy);
+  if (!target) return;
+
+  const dx = target.x - player.aim.x;
+  const dy = target.y - player.aim.y;
+
+  const strength = Engine.precision ? 1.0 : 0.9;
+
+  player.aim.x += dx * strength;
+  player.aim.y += dy * strength;
+}
+
+// ===== AIM LOCK =====
+function runAimLock(player, enemy) {
+  if (!Engine.aimLock || !enemy) return;
+
+  const target = getTargetPoint(enemy);
+  if (!target) return;
+
+  player.aim.x = target.x;
+  player.aim.y = target.y;
+}
+
+// ===== CONTROLE DE RECUO =====
+function applyRecoilControl(weapon) {
+  if (!Engine.recoilControl || !weapon) return;
+
+  weapon.recoil.x *= 0.05;
+  weapon.recoil.y *= 0.05;
+
+  if (Engine.precision) {
+    weapon.spread = 0;
+  }
+}
+
+// ===== ESTABILIDADE =====
+function applyStability(player) {
+  if (!Engine.stability) return;
+
+  player.shake *= 0.1;
+  player.sway  *= 0.1;
+}
+
+// ===== PRECISÃO / FULL HS =====
+function applyPrecision(player) {
+  if (!Engine.precision) return;
+
+  player.errorMargin = 0;
+
+  if (Engine.target === "head") {
+    player.hitZoneMultiplier = 1.6; // HS quase garantido
+  } else if (Engine.target === "neck") {
+    player.hitZoneMultiplier = 1.4;
+  }
+}
+
+// ===== GAME LOOP =====
+function gameTick(player, enemy, weapon) {
+  runAimAssist(player, enemy);
+  runAimbot(player, enemy);
+  runAimLock(player, enemy);
+
+  applyRecoilControl(weapon);
+  applyStability(player);
+  applyPrecision(player);
+    }
