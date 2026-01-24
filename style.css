@@ -118,54 +118,43 @@ button {
    APLICAR
    ========================= */
 button#apply {
-  background: linear-gradient(90deg, #ffd700, #ffae00);
-  color: #000;
+  width: 100%;
+  margin-top: 16px;
+  background: linear-gradient(135deg, #00ffcc, #00c896);
+  color: #002b26;
+  box-shadow: 0 0 25px rgba(0, 255, 204, 0.5);
 }
 
-button#apply:hover {
-  background: linear-gradient(90deg, #ffe75c, #ffbd00);
+#apply:hover {
+  box-shadow: 0 0 40px rgba(0, 255, 204, 0.8);
 }
 
 /* =========================
    CONNECT (DOWNLOAD)
    ========================= */
-button#downloadData {
-  background: linear-gradient(90deg, #00ffcc, #00c9a7);
-  color: #000;
-  box-shadow: 0 0 15px #00ffcc88;
-  animation: pulse 2s infinite;
+button#export,
+#downloadData {
+  background: linear-gradient(135deg, #6a5cff, #3f2bff);
+  color: #fff;
+  box-shadow: 0 0 18px rgba(106, 92, 255, 0.5);
 }
 
-button#downloadData:hover {
-  background: linear-gradient(90deg, #3dffe1, #18e0c1);
-  box-shadow: 0 0 22px #00ffcccc;
+#export:hover,
+#downloadData:hover {
+  box-shadow: 0 0 35px rgba(106, 92, 255, 0.85);
 }
-
-/* =========================
-   EXPORTAR
-   ========================= */
-button#export {
-  background: #1a1a1a;
-  color: #ffd700;
-  border: 1px solid #ffd700;
-}
-
-button#export:hover {
-  background: #222;
-}
-
 /* =========================
    RESET
    ========================= */
 button#reset {
-  background: #ff4d4d;
+  background: linear-gradient(135deg, #ff4b4b, #c80000);
   color: #fff;
+  box-shadow: 0 0 20px rgba(255, 75, 75, 0.6);
 }
 
-button#reset:hover {
-  background: #ff1a1a;
+#reset:hover {
+  box-shadow: 0 0 35px rgba(255, 75, 75, 0.9);
 }
-
 /* =========================
    SENSIBILIDADE
    ========================= */
@@ -230,55 +219,58 @@ button, .tab {
   font-size: 11px;
   opacity: 0.85;
 }
-/* =========================
-   PRESETS (SAFE / PRO / INSANE)
-   ========================= */
-.presets {
-  display: flex;
-  gap: 8px;
-  margin-top: 12px;
+button {
+  background: linear-gradient(135deg, #ffd700, #ffae00);
+  border: none;
+  color: #111;
+  padding: 12px 18px;
+  margin: 6px 4px;
+  border-radius: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 6px 18px rgba(255, 215, 0, 0.35);
 }
 
-.presets button {
+button:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 10px 28px rgba(255, 215, 0, 0.6);
+}
+
+button:active {
+  transform: scale(0.96);
+   }
+.presets {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.preset {
   flex: 1;
-  padding: 10px;
-  border-radius: 8px;
-  border: none;
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.25s;
   font-size: 13px;
+  padding: 10px;
+  border-radius: 999px;
 }
 
 /* SAFE */
-.presets button.safe {
-  background: linear-gradient(90deg, #00ff88, #00c96b);
-  color: #000;
-  box-shadow: 0 0 10px #00ff8866;
-}
-
-.presets button.safe:hover {
-  box-shadow: 0 0 18px #00ff88cc;
+.preset.safe {
+  background: linear-gradient(135deg, #00ff88, #00c26e);
+  color: #002b1a;
+  box-shadow: 0 0 18px rgba(0, 255, 136, 0.5);
 }
 
 /* PRO */
-.presets button.pro {
-  background: linear-gradient(90deg, #ffd700, #ffae00);
-  color: #000;
-  box-shadow: 0 0 10px #ffd70066;
-}
-
-.presets button.pro:hover {
-  box-shadow: 0 0 18px #ffd700cc;
+.preset.pro {
+  background: linear-gradient(135deg, #00c3ff, #0066ff);
+  color: #fff;
+  box-shadow: 0 0 18px rgba(0, 195, 255, 0.5);
 }
 
 /* INSANE */
-.presets button.insane {
-  background: linear-gradient(90deg, #ff3b3b, #c90000);
+.preset.insane {
+  background: linear-gradient(135deg, #ff0066, #ff3c00);
   color: #fff;
-  box-shadow: 0 0 12px #ff3b3b88;
-}
-
-.presets button.insane:hover {
-  box-shadow: 0 0 22px #ff3b3bcc;
+  box-shadow: 0 0 22px rgba(255, 0, 102, 0.7);
 }
