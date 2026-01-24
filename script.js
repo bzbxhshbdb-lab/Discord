@@ -61,6 +61,8 @@ function applyConfig() {
   if (Engine.aimbot) console.log(`🤖 Aimbot ativo (${Engine.target})`);
   if (Engine.recoilControl) console.log("🧱 Recuo zerado");
 
+  updateMeters();
+
   alert("✅ Configurações aplicadas");
 }
 
@@ -112,4 +114,39 @@ async function downloadConnect() {
 function getCheck(key) {
   const el = document.querySelector(`input[data-key="${key}"]`);
   return el ? el.checked : false;
+}
+function updateMeters() {
+  let hs = 0;
+  let opt = 0;
+  let sens = 0;
+
+  // ===== HS =====
+  if (Engine.aimbot) hs += 40;
+  if (Engine.aimLock) hs += 30;
+  if (Engine.aimAssist) hs += 20;
+  if (Engine.target === "head") hs += 10;
+  if (hs > 100) hs = 100;
+
+  // ===== OTIMIZAÇÃO =====
+  if (getCheck("fpsBoost")) opt += 30;
+  if (getCheck("antilag")) opt += 25;
+  if (getCheck("lowLatency")) opt += 25;
+  if (getCheck("reduceDelay")) opt += 20;
+  if (opt > 100) opt = 100;
+
+  // ===== SENSIBILIDADE =====
+  sens = Math.round(
+    (Engine.sensitivity.x +
+     Engine.sensitivity.y +
+     Engine.sensitivity.z) / 3
+  );
+
+  // Aplicar visual
+  hsMeter.style.width = hs + "%";
+  optMeter.style.width = opt + "%";
+  sensMeter.style.width = sens + "%";
+
+  hsValue.innerText = hs + "%";
+  optValue.innerText = opt + "%";
+  sensValue.innerText = sens + "%";
 }
