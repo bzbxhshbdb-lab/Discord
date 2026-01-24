@@ -39,31 +39,30 @@ document.addEventListener("DOMContentLoaded", () => {
 // APLICAR CONFIG
 // ========================
 function applyConfig() {
-  Engine.aimAssist = getCheck("aimAssist");
-  Engine.aimLock = getCheck("aimLock");
-  Engine.aimbot = getCheck("aimbot");
-  Engine.recoilControl = getCheck("recoilControl");
-  Engine.stability = getCheck("weaponStability");
-  Engine.precision = getCheck("dynamicPrecision");
+  try {
+    Engine.aimAssist = getCheck("aimAssist");
+    Engine.aimLock = getCheck("aimLock");
+    Engine.aimbot = getCheck("aimbot");
+    Engine.recoilControl = getCheck("recoilControl");
+    Engine.stability = getCheck("weaponStability");
+    Engine.precision = getCheck("dynamicPrecision");
 
-  Engine.target = document.getElementById("target").value;
+    Engine.target = document.getElementById("target")?.value || "neck";
 
-  Engine.sensitivity.x = Number(sensX.value);
-  Engine.sensitivity.y = Number(sensY.value);
-  Engine.sensitivity.z = Number(sensZ.value);
+    Engine.sensitivity.x = Number(sensX?.value || 0);
+    Engine.sensitivity.y = Number(sensY?.value || 0);
+    Engine.sensitivity.z = Number(sensZ?.value || 0);
 
-  console.clear();
-  console.log("🔥 ZXiter Engine Ativo");
-  console.table(Engine);
+    console.clear();
+    console.log("🔥 ZXiter Engine Ativo");
+    console.table(Engine);
 
-  if (Engine.aimAssist) console.log(`🎯 Aim Assist ativo | Força ${Engine.sensitivity.z}`);
-  if (Engine.aimLock) console.log(`🔒 Aim Lock travado em ${Engine.target}`);
-  if (Engine.aimbot) console.log(`🤖 Aimbot ativo (${Engine.target})`);
-  if (Engine.recoilControl) console.log("🧱 Recuo zerado");
-
-  alert("✅ Configurações aplicadas");
+    alert("✅ Configurações aplicadas");
+  } catch (e) {
+    console.error("❌ Erro no Apply:", e);
+    alert("Erro ao aplicar config (veja o console)");
+  }
 }
-
 // ========================
 // RESET
 // ========================
