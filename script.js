@@ -153,3 +153,74 @@ function updateMeters() {
 
   applyConfig();
   }
+function runAimbot(player, enemy) {
+  if (!Engine.aimbot || !enemy) return;
+
+  const targetPos = getTargetPoint(enemy);
+  const delta = {
+    x: targetPos.x - player.aim.x,
+    y: targetPos.y - player.aim.y
+  };
+
+  const strength = Engine.precision ? 1.0 : 0.85;
+
+  player.aim.x += delta.x * strength;
+  player.aim.y += delta.y * strength;
+}
+  function runAimAssist(player, enemy) {
+  if (!Engine.aimAssist || !enemy) return;
+
+  const targetPos = getTargetPoint(enemy);
+  const assist = 0.15 + (Engine.stability ? 0.1 : 0);
+
+  player.aim.x += (targetPos.x - player.aim.x) * assist;
+  player.aim.y += (targetPos.y - player.aim.y) * assist;
+  }
+  function runAimLock(player, enemy) {
+  if (!Engine.aimLock || !enemy) return;
+
+  const lockPoint = getTargetPoint(enemy);
+  player.aim.x = lockPoint.x;
+  player.aim.y = lockPoint.y;
+  }
+  function applyRecoilControl(weapon) {
+  if (!Engine.recoilControl) return;
+
+  weapon.recoil.x *= 0.05;
+  weapon.recoil.y *= 0.05;
+
+  if (Engine.precision) {
+    weapon.spread = 0;
+  }
+  }
+  function applyStability(player) {
+  if (!Engine.stability) return;
+
+  player.shake *= 0.1;
+  player.sway  *= 0.1;
+  }
+  function applyPrecision(player) {
+  if (!Engine.precision) return;
+
+  player.errorMargin = 0;
+
+  if (Engine.target === "head") {
+    player.hitZoneMultiplier = 1.5;
+  } else if (Engine.target === "neck") {
+    player.hitZoneMultiplier = 1.3;
+  }
+    }
+  function getTargetPoint(enemy) {
+  if (Engine.target === "head") return enemy.bones.head;
+  if (Engine.target === "neck") return enemy.bones.neck;
+  return enemy.center;
+  }
+  function gameTick(player, enemy, weapon) {
+  runAimAssist(player, enemy);
+  runAimbot(player, enemy);
+  runAimLock(player, enemy);
+
+  applyRecoilControl(weapon);
+  applyStability(player);
+  applyPrecision(player);
+  }
