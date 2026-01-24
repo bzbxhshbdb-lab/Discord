@@ -1,10 +1,15 @@
 /* =========================
-   RESET E BASE
-   ========================= */
+   RESET + BASE
+========================= */
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background: #0b0b0b;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: radial-gradient(circle at top, #151515, #050505);
   color: #ffd700;
   display: flex;
   justify-content: center;
@@ -12,69 +17,77 @@ body {
   height: 100vh;
 }
 
+/* =========================
+   PAINEL VIP
+========================= */
 .panel {
-  background: #111;
+  width: 350px;
+  padding: 22px;
+  background: linear-gradient(180deg, #111, #0a0a0a);
+  border-radius: 18px;
   border: 2px solid #ffd700;
-  box-shadow: 0 0 25px #ffd70066;
-  padding: 20px;
-  width: 340px;
-  border-radius: 14px;
+  box-shadow:
+    0 0 20px #ffd70055,
+    inset 0 0 12px #ffd70022;
   text-align: center;
 }
 
 /* =========================
    TÍTULO
-   ========================= */
+========================= */
 h1 {
   margin: 0;
   font-size: 22px;
+  letter-spacing: 0.5px;
 }
 
 h1 span {
-  color: #ffea70;
+  color: #fff2a8;
 }
 
 .subtitle {
+  margin-top: 4px;
   font-size: 12px;
-  opacity: 0.85;
-  margin-bottom: 15px;
+  opacity: 0.8;
 }
 
 /* =========================
    ABAS
-   ========================= */
+========================= */
 .tabs {
   display: flex;
-  margin-top: 15px;
-  border-bottom: 2px solid #ffd70055;
+  margin-top: 16px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #ffd70055;
 }
 
 .tab {
   flex: 1;
-  background: #1a1a1a;
-  border: none;
-  color: #ffd700;
   padding: 8px;
+  background: #161616;
+  color: #ffd700;
+  border: none;
+  font-weight: 700;
   cursor: pointer;
   transition: 0.25s;
-  font-weight: bold;
 }
 
 .tab:hover {
-  background: #222;
+  background: #1f1f1f;
 }
 
 .tab.active {
-  background: #ffd700;
-  color: #000;
+  background: linear-gradient(135deg, #ffd700, #ffb300);
+  color: #111;
 }
 
 /* =========================
    CONTEÚDO
-   ========================= */
+========================= */
 .content {
   display: none;
-  margin-top: 15px;
+  margin-top: 16px;
   text-align: left;
 }
 
@@ -88,103 +101,120 @@ label {
   font-size: 14px;
 }
 
+input[type="checkbox"] {
+  accent-color: #ffd700;
+}
+
 select,
-input[type=number] {
+input[type="number"] {
   width: 100%;
-  padding: 6px;
   margin-top: 4px;
-  border-radius: 6px;
-  border: 1px solid #ffd70088;
-  background: #1a1a1a;
+  padding: 6px;
+  background: #151515;
   color: #ffd700;
-  font-size: 14px;
+  border-radius: 8px;
+  border: 1px solid #ffd70066;
 }
 
 /* =========================
    BOTÕES BASE
-   ========================= */
-button {
+========================= */
+.btn {
   width: 100%;
+  padding: 12px;
   margin-top: 10px;
-  padding: 11px;
-  border-radius: 8px;
+  border-radius: 14px;
   border: none;
-  font-weight: bold;
+  font-weight: 800;
+  letter-spacing: 0.4px;
   cursor: pointer;
-  transition: 0.25s;
+  transition: all 0.25s ease;
+  user-select: none;
 }
 
 /* =========================
    APLICAR
-   ========================= */
-button#apply {
-  width: 100%;
-  margin-top: 16px;
+========================= */
+#apply {
   background: linear-gradient(135deg, #00ffcc, #00c896);
   color: #002b26;
-  box-shadow: 0 0 25px rgba(0, 255, 204, 0.5);
+  box-shadow: 0 0 25px #00ffcc88;
 }
 
 #apply:hover {
-  box-shadow: 0 0 40px rgba(0, 255, 204, 0.8);
+  transform: scale(1.03);
+  box-shadow: 0 0 40px #00ffcccc;
 }
 
 /* =========================
-   CONNECT (DOWNLOAD)
-   ========================= */
-button#export,
-#downloadData {
+   DOWNLOAD / EXPORT
+========================= */
+#downloadData,
+#export {
   background: linear-gradient(135deg, #6a5cff, #3f2bff);
   color: #fff;
-  box-shadow: 0 0 18px rgba(106, 92, 255, 0.5);
+  box-shadow: 0 0 20px #6a5cff88;
 }
 
-#export:hover,
-#downloadData:hover {
-  box-shadow: 0 0 35px rgba(106, 92, 255, 0.85);
+#downloadData:hover,
+#export:hover {
+  transform: scale(1.03);
 }
+
 /* =========================
    RESET
-   ========================= */
-button#reset {
-  background: linear-gradient(135deg, #ff4b4b, #c80000);
+========================= */
+#reset {
+  background: linear-gradient(135deg, #ff4b4b, #b80000);
   color: #fff;
-  box-shadow: 0 0 20px rgba(255, 75, 75, 0.6);
+  box-shadow: 0 0 22px #ff4b4b88;
 }
 
 #reset:hover {
-  box-shadow: 0 0 35px rgba(255, 75, 75, 0.9);
+  transform: scale(1.03);
 }
+
 /* =========================
-   SENSIBILIDADE
-   ========================= */
-#sensitivity label {
+   PRESETS VIP
+========================= */
+.presets {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
 }
 
-#sensitivity input[type=number] {
-  width: 60px;
-  text-align: center;
+.preset {
+  flex: 1;
+  padding: 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
 }
 
-/* =========================
-   ANIMAÇÃO CONNECT
-   ========================= */
-@keyframes pulse {
-  0% { box-shadow: 0 0 10px #00ffcc66; }
-  50% { box-shadow: 0 0 25px #00ffcccc; }
-  100% { box-shadow: 0 0 10px #00ffcc66; }
+/* SAFE */
+.preset.safe {
+  background: linear-gradient(135deg, #00ff88, #00c26e);
+  color: #003d24;
+  box-shadow: 0 0 18px #00ff8888;
 }
-button, .tab {
-  pointer-events: auto;
-  touch-action: manipulation;
-  user-select: none;
-   }
+
+/* PRO */
+.preset.pro {
+  background: linear-gradient(135deg, #00c3ff, #0066ff);
+  color: #fff;
+  box-shadow: 0 0 18px #00c3ff88;
+}
+
+/* INSANE */
+.preset.insane {
+  background: linear-gradient(135deg, #ff0066, #ff3c00);
+  color: #fff;
+  box-shadow: 0 0 22px #ff006688;
+}
+
 /* =========================
    MEDIDORES
-   ========================= */
+========================= */
 .meters {
   margin-top: 20px;
 }
@@ -195,17 +225,17 @@ button, .tab {
 
 .meter span {
   font-size: 13px;
-  display: block;
   margin-bottom: 4px;
+  display: block;
 }
 
 .bar {
   width: 100%;
   height: 10px;
-  background: #222;
-  border-radius: 6px;
+  background: #1a1a1a;
+  border-radius: 999px;
   overflow: hidden;
-  border: 1px solid #ffd70055;
+  border: 1px solid #ffd70044;
 }
 
 .fill {
@@ -219,58 +249,16 @@ button, .tab {
   font-size: 11px;
   opacity: 0.85;
 }
-button {
-  background: linear-gradient(135deg, #ffd700, #ffae00);
-  border: none;
-  color: #111;
-  padding: 12px 18px;
-  margin: 6px 4px;
-  border-radius: 12px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  box-shadow: 0 6px 18px rgba(255, 215, 0, 0.35);
+
+/* =========================
+   ANIMAÇÃO VIP
+========================= */
+@keyframes pulse {
+  0% { box-shadow: 0 0 12px #00ffcc55; }
+  50% { box-shadow: 0 0 28px #00ffcccc; }
+  100% { box-shadow: 0 0 12px #00ffcc55; }
 }
 
-button:hover {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 10px 28px rgba(255, 215, 0, 0.6);
-}
-
-button:active {
-  transform: scale(0.96);
-   }
-.presets {
-  display: flex;
-  gap: 10px;
-  margin-top: 14px;
-}
-
-.preset {
-  flex: 1;
-  font-size: 13px;
-  padding: 10px;
-  border-radius: 999px;
-}
-
-/* SAFE */
-.preset.safe {
-  background: linear-gradient(135deg, #00ff88, #00c26e);
-  color: #002b1a;
-  box-shadow: 0 0 18px rgba(0, 255, 136, 0.5);
-}
-
-/* PRO */
-.preset.pro {
-  background: linear-gradient(135deg, #00c3ff, #0066ff);
-  color: #fff;
-  box-shadow: 0 0 18px rgba(0, 195, 255, 0.5);
-}
-
-/* INSANE */
-.preset.insane {
-  background: linear-gradient(135deg, #ff0066, #ff3c00);
-  color: #fff;
-  box-shadow: 0 0 22px rgba(255, 0, 102, 0.7);
+#apply {
+  animation: pulse 1.8s infinite;
 }
