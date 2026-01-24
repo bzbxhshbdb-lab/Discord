@@ -193,3 +193,40 @@ button, .tab {
   touch-action: manipulation;
   user-select: none;
    }
+/* =========================
+   MEDIDORES
+   ========================= */
+.meters {
+  margin-top: 20px;
+}
+
+.meter {
+  margin-bottom: 14px;
+}
+
+.meter span {
+  font-size: 13px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.bar {
+  width: 100%;
+  height: 10px;
+  background: #222;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #ffd70055;
+}
+
+.fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #00ffcc, #ffd700);
+  transition: width 0.4s ease;
+}
+
+.meter small {
+  font-size: 11px;
+  opacity: 0.85;
+}
