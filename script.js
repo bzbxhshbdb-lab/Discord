@@ -240,9 +240,44 @@ function applyPrecision(player) {
     player.hitZoneMultiplier = 1.4;
   }
 }
+// ========================
+// CONEXÃO COM SERVIDOR
+// ========================
+
+let SERVER_ENGINE = null;
+let SERVER_URL = "http://localhost:3000/engine"; // servidor que você criou
+
+async function syncServerEngine() {
+  try {
+    const res = await fetch(SERVER_URL);
+    const data = await res.json();
+
+    if (!data || !data.serverValidated) return;
+
+    // servidor tem prioridade
+    SERVER_ENGINE = data;
+
+    // sobrescreve Engine local
+    Object.assign(Engine, SERVER_ENGINE);
+
+    console.log("🟢 Engine sincronizada do servidor");
+  } catch (e) {
+    console.warn("🔴 Servidor offline, usando Engine local");
+  }
+}
+
+// sincroniza a cada 1s
+setInterval(syncServerEngine, 1000);
 
 // ===== GAME LOOP =====
 function gameTick(player, enemy, weapon) {
+
+  // 🔌 SINCRONIZA COM O SERVIDOR
+  if (SERVER_ENGINE.connected && SERVER_ENGINE.state) {
+    Object.assign(Engine, SERVER_ENGINE.state);
+  }
+
+  // 🎯 MOTOR DE COMBATE
   runAimAssist(player, enemy);
   runAimbot(player, enemy);
   runAimLock(player, enemy);
@@ -250,4 +285,4 @@ function gameTick(player, enemy, weapon) {
   applyRecoilControl(weapon);
   applyStability(player);
   applyPrecision(player);
-    }
+}
