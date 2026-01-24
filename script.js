@@ -9,7 +9,7 @@ const Engine = {
   stability: false,
   precision: false,
   target: "head",
-  sensitivity: { x: 50, y: 50, z: 50 }
+  sensitivity: { x: 0, y: 0, z: 0 }
 };
 
 let sensX, sensY, sensZ, target;
