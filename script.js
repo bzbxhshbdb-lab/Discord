@@ -1,4 +1,16 @@
 // ========================
+// HELPERS
+// ========================
+function getCheck(key) {
+  const el = document.querySelector(`[data-key="${key}"]`);
+  return el ? el.checked : false;
+}
+
+// Sensibilidade (refs globais)
+const sensX = document.getElementById("sensX");
+const sensY = document.getElementById("sensY");
+const sensZ = document.getElementById("sensZ");
+// ========================
 // ESTADO DO SISTEMA
 // ========================
 const Engine = {
@@ -47,11 +59,13 @@ function applyConfig() {
     Engine.stability = getCheck("weaponStability");
     Engine.precision = getCheck("dynamicPrecision");
 
-    Engine.target = document.getElementById("target")?.value || "neck";
+    Engine.target = document.getElementById("target").value;
 
-    Engine.sensitivity.x = Number(sensX?.value || 0);
-    Engine.sensitivity.y = Number(sensY?.value || 0);
-    Engine.sensitivity.z = Number(sensZ?.value || 0);
+    Engine.sensitivity.x = Number(sensX.value);
+    Engine.sensitivity.y = Number(sensY.value);
+    Engine.sensitivity.z = Number(sensZ.value);
+
+    updateMeters(); // 🔥 AGORA OS MEDIDORES FUNCIONAM
 
     console.clear();
     console.log("🔥 ZXiter Engine Ativo");
